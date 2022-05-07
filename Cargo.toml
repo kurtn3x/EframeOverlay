@@ -1,0 +1,16 @@
+[package]
+name = "RustyPoe"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+egui = {path = "egui"}
+# eframe = { path = "eframe", features = ["persistence"] }
+eframe = { path = "eframe"}
+winit = "0.26.1"
+enigo = "0.0.14"
+
+[replace]
+"winit:0.26.1" = { path = "winit" }
