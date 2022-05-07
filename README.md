@@ -1,0 +1,1 @@
+A Simple Overlay using the Eframe Template / Egui. Can be used for drawing overlays over games or other stuff. Is a transparent window that lets all input pass trough, so it doesnt block any input. Only allows input if hovering over buttons for example.
