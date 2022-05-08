@@ -11,6 +11,8 @@ egui = {path = "egui"}
 eframe = { path = "eframe"}
 winit = "0.26.1"
 enigo = "0.0.14"
+rev_lines = "0.2.1"
+inputbot = "0.5.1"
 
 [replace]
 "winit:0.26.1" = { path = "winit" }

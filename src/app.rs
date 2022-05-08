@@ -1,6 +1,11 @@
 use std::time::Duration;
-
+use enigo::Enigo;
 use egui::{style::Visuals, Pos2, Vec2, Style};
+extern crate rev_lines;
+use rev_lines::RevLines;
+use std::io::BufReader;
+use std::fs::File;
+use inputbot;
 
 enum RunMode {
     Reactive,
@@ -26,12 +31,14 @@ pub struct TemplateApp {
 
     // subwindow handling
     show_window_1 : bool,
+    some_window_open: bool,
 
     // windows size as vec2 in pixels
     pub window_size : Vec2,
 
     // window position as pos2 in pixels
     pub window_pos : Pos2,
+
 }
 
 impl Default for TemplateApp {
@@ -44,7 +51,8 @@ impl Default for TemplateApp {
             edit_mode: false,
             show_window_1: false,
             window_size: Vec2 { x: 1919.0, y: 1079.0 },
-            window_pos: Pos2 { x: 0.0, y: 0.0 }
+            window_pos: Pos2 { x: 0.0, y: 0.0 },
+            some_window_open : false,
         }
     }
 }
@@ -52,11 +60,10 @@ impl Default for TemplateApp {
 impl TemplateApp {
     /// Called once before the first frame.
     pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
-        // This is also where you can customized the look at feel of egui using
-        // `cc.egui_ctx.set_visuals` and `cc.egui_ctx.set_fonts`.
-
-        // Load previous app state (if any).
-        // Note that you must enable the `persistence` feature for this to work.
+        if inputbot::KeybdKey::RKey.is_pressed(){
+            
+            println!("WX")}
+        inputbot::handle_input_events();
 
 
         Default::default()
@@ -98,7 +105,6 @@ impl TemplateApp {
 
     }
 }
-use enigo::Enigo;
 
 impl eframe::App for TemplateApp {
     fn clear_color(&self, _visuals: &egui::Visuals) -> egui::Rgba {
@@ -108,8 +114,31 @@ impl eframe::App for TemplateApp {
     fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
         let Self { label, value, runmode_continuous,
              cursor_hittest, show_window_1, window_pos, window_size,
-             edit_mode
+             edit_mode, some_window_open
          } = self;
+
+         while inputbot::KeybdKey::RKey.is_pressed(){
+             self.some_window_open = true;
+        } 
+
+
+
+        if self.some_window_open{
+            egui::Window::new("Window2")
+            .resizable(true)
+            .default_pos(Pos2{x: 100.0, y: 100.0})
+            .frame(egui::Frame{
+                fill: egui::Color32::from_rgba_premultiplied(180, 180, 180, 180),
+                ..egui::Frame::default()
+            })
+            .collapsible(false)
+            .show(ctx, |ui| {
+               ui.visuals_mut().override_text_color = Some(egui::Color32::BLACK);
+               ui.label("Test" )});
+        }
+             
+        
+
 
         // getting our cursor position to check if our cursor is hovering over a specific thing
         let temp_cursor: (i32, i32) = Enigo::mouse_location();
@@ -118,6 +147,16 @@ impl eframe::App for TemplateApp {
 
 
         // update our window all the time with a small sleep value to reduce CPU usage
+
+        // let thread = std::thread::spawn(move || {
+        //     let log_file = File::open("C:\\Program Files (x86)\\Grinding Gear Games\\Path of Exile\\logs\\client.txt").unwrap();
+        //     let rev_lines = RevLines::new(BufReader::new(log_file)).unwrap();        rSSSSSSSSSSSSSSSSSSSSSSSSSSSS   rSSSSSSSSSSSSSSSSSSSSSSSSSSS  
+        //     std::thread::sleep(Duration::from_millis(10));
+        //     for line in rev_lines{
+        //         println!("{}", line);
+        //     }
+        // });
+
         if self.runmode_continuous == true {
             ctx.request_repaint();
             std::thread::sleep(Duration::from_millis(1));
@@ -136,41 +175,10 @@ impl eframe::App for TemplateApp {
             else { egui::Color32::TRANSPARENT };
  
 
-        // the main app
-        egui::CentralPanel::default()
-        .frame(egui::Frame{
-            fill: background_color,
-            ..egui::Frame::default()
-        })
-        .show(ctx, |ui| {
-
-            ui.label("Hello World!");
-            let open_butt = ui.button("Open Window");
-            let edit_butt = ui.button("Edit Mode");
-
-            if open_butt.rect.contains(cursor_location) {
-                self.cursor_hittest = true;
-                if open_butt.clicked(){
-                    self.toogle_show_window1();
-                }
-            } else if edit_butt.rect.contains(cursor_location) {
-                self.cursor_hittest = true;
-                if edit_butt.clicked(){
-                    self.toogle_cursor_hittest();
-                    self.toogle_edit_mode();
-                }
-            } else {
-                // edit mode on
-                if self.edit_mode{
-                    self.cursor_hittest = true;
-
-                } 
-                // dont capture any inputs
-                else {
-                    self.cursor_hittest = false;
-                }
-            }
-         });
+        // the main panel that covers almost the full screen
+        show_central_panel(ctx, frame, background_color, cursor_location, self);
+         // bottom panel
+         show_bottom_panel(ctx, frame,cursor_location, self);
 
 
          if self.show_window_1{
@@ -184,12 +192,74 @@ impl eframe::App for TemplateApp {
             .collapsible(false)
             .show(ctx, |ui| {
                 ui.visuals_mut().override_text_color = Some(egui::Color32::BLACK);
-                ui.label("Windows can be moved by dragging them.");
-                ui.label("They are automatically sized based on contents.");
-                ui.label("You can turn on resizing and scrolling if you like.");
-                ui.label("You would normally chose either panels OR windows.");
+                ui.label("{}", );
             });
          }
 
     }
+}
+
+
+fn show_central_panel(
+    ctx: &egui::Context,
+    frame: &mut eframe::Frame,
+    background_color: egui::Color32,
+    cursor_location: Pos2,
+    app: &mut TemplateApp,
+) {
+    egui::CentralPanel::default()
+    .frame(egui::Frame{
+        fill: background_color,
+        ..egui::Frame::default()
+    })
+    .show(ctx, |ui| {
+        ui.label("Hello World!");
+        let open_butt = ui.add(egui::Button::new("Open Window").fill(egui::Color32::WHITE));
+        let edit_butt = ui.add(egui::Button::new("Edit Mode"));
+
+        if open_butt.rect.contains(cursor_location) {
+            app.cursor_hittest = true;
+            if open_butt.clicked(){
+                app.toogle_show_window1();
+            }
+        } else if edit_butt.rect.contains(cursor_location) {
+            app.cursor_hittest = true;
+            if edit_butt.clicked(){
+                app.toogle_cursor_hittest();
+                app.toogle_edit_mode();
+            }
+        } else {
+            // edit mode on
+            if app.edit_mode{
+                app.cursor_hittest = true;
+
+            } 
+            // dont capture any inputs
+            else {
+                app.cursor_hittest = false;
+            }
+        }
+     });
+}
+
+fn show_bottom_panel(
+    ctx: &egui::Context,
+    frame: &mut eframe::Frame,
+    cursor_location: Pos2,
+    app: &mut TemplateApp,
+) {
+    egui::TopBottomPanel::bottom("top_panel")
+    .frame(egui::Frame{
+       fill: egui::Color32::TRANSPARENT,
+       ..egui::Frame::default()
+   })
+    .show(ctx, |ui| {
+       egui::menu::bar(ui, |ui| {
+           ui.add_space(100.0);
+           let quit_button = ui.add(egui::Button::new("Quit").fill(egui::Color32::WHITE));
+           if quit_button.clicked() {
+                   frame.quit();
+           };
+       });
+   });
 }
