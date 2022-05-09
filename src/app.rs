@@ -1,4 +1,7 @@
 use std::time::Duration;
+extern crate enigo;
+use eframe::epaint::text::cursor;
+use egui::plot::{Plot, PlotUi};
 use enigo::{Enigo, MouseControllable, KeyboardControllable};
 use egui::{style::Visuals, Pos2, Vec2, Style};
 extern crate rev_lines;
@@ -59,7 +62,7 @@ impl Default for TemplateApp {
             cursor_hittest: false,
             edit_mode: false,
             show_window_1: false,
-            window_size: Vec2 { x: 1919.0, y: 10.0 },
+            window_size: Vec2 { x: 1919.0, y: 1079.0 },
             window_pos: Pos2 { x: 0.0, y: 0.0 },
             some_window_open : false,
             clipboard_manager : ClipboardProvider::new().unwrap(),
@@ -110,17 +113,15 @@ impl TemplateApp {
     }
 
     fn parse_clipboard(&mut self){
-        println!("W");
         let z = self.clipboard_manager.get_contents().unwrap();
         let mut enigo = Enigo::new();
         enigo.key_down(enigo::Key::Control);
-        enigo.key_down(enigo::Key::Layout('F'));
+        enigo.key_down(enigo::Key::Layout('c'));
         enigo.key_up(enigo::Key::Control);
-        enigo.key_up(enigo::Key::Layout('F'));
-
+        enigo.key_up(enigo::Key::Layout('c'));
         println!("{:?}", z);
 
-        // self.clipboard_manager.set_contents(z);
+        // self.clipboard_manager.set_contents(z); 
     }
 }
 
@@ -157,26 +158,22 @@ impl eframe::App for TemplateApp {
         // getting our cursor position to check if our cursor is hovering over a specific thing
 
         //only works for windows
-        let temp_cursor: (i32, i32) = (0,0);
-        // let temp_cursor: (i32, i32) = MouseControllable::mouse_location(MouseControllable);
+        // let temp_cursor: (i32, i32) = (0,0);
+        let temp_cursor: (i32, i32) = enigo::Enigo::mouse_location();
         let cursor_location = Pos2{x: (temp_cursor.0 as f32 - window_pos.x),
              y: (temp_cursor.1 as f32 - window_pos.y)};
         
+        let x = egui::PointerState::default();
+        println!("sdsd {:?}", x.velocity());
+
+        
                 
-        inputbot::KeybdKey::RKey.bind(|| println!("WWW"));
-        inputbot::handle_input_events();
+        if inputbot::KeybdKey::CapsLockKey.is_pressed(){
+            self.parse_clipboard();
+        }
 
 
-        // update our window all the time with a small sleep value to reduce CPU usage
-
-        // let thread = std::thread::spawn(move || {
-        //     let log_file = File::open("C:\\Program Files (x86)\\Grinding Gear Games\\Path of Exile\\logs\\client.txt").unwrap();
-        //     let rev_lines = RevLines::new(BufReader::new(log_file)).unwrap();        rSSSSSSSSSSSSSSSSSSSSSSSSSSSS   rSSSSSSSSSSSSSSSSSSSSSSSSSSS  
-        //     std::thread::sleep(Duration::from_millis(10));
-        //     for line in rev_lines{
-        //         println!("{}", line);
-        //     }
-        // });
+        // update our window all the time with a small sleep value to reduce CPU usage 
 
         if self.runmode_continuous == true {
             ctx.request_repaint();
@@ -206,8 +203,7 @@ impl eframe::App for TemplateApp {
          // bottom panel
         show_bottom_panel(ctx, frame,cursor_location, self);
 
-
-         if self.show_window_1{
+        if self.show_window_1{
             egui::Window::new("Window")
             .resizable(true)
             .default_pos(Pos2{x: 100.0, y: 100.0})
@@ -225,7 +221,6 @@ impl eframe::App for TemplateApp {
     }
 }
 
-
 fn show_central_panel(
     ctx: &egui::Context,
     frame: &mut eframe::Frame,
@@ -239,32 +234,33 @@ fn show_central_panel(
         ..egui::Frame::default()
     })
     .show(ctx, |ui| {
-        ui.label("Hello World!");
         let open_butt = ui.add(egui::Button::new("Open Window").fill(egui::Color32::WHITE));
-        let edit_butt = ui.add(egui::Button::new("Edit Mode"));
+        // println!("EDITLOC {:?}", ui.next_widget_position());
+        let edit_butt = ui.add(egui::Button::new("Edit Mode").fill(egui::Color32::WHITE));
 
-        // if open_butt.rect.contains(cursor_location) {
+
+        if edit_butt.rect.contains(cursor_location) {
+            app.cursor_hittest = true;
+            if edit_butt.clicked(){
+                app.toogle_edit_mode();
+            }
+            
+
+        } else if open_butt.rect.contains(cursor_location)  {
             app.cursor_hittest = true;
             if open_butt.clicked(){
                 app.toogle_show_window1();
             }
-        // } else if edit_butt.rect.contains(cursor_location) {
-            app.cursor_hittest = true;
-            if edit_butt.clicked(){
-                app.toogle_cursor_hittest();
-                app.toogle_edit_mode();
-            }
-        // } else {
+        } else {
             // edit mode on
-    //         if app.edit_mode{
-    //             app.cursor_hittest = true;
-
-    //         } 
-    //         // dont capture any inputs
-    //         else {
-    //             app.cursor_hittest = false;
-    //         }
-    //     // }
+            if app.edit_mode{
+                app.cursor_hittest = true;
+            } 
+            // dont capture any inputs
+            else {
+                app.cursor_hittest = false;
+            }
+        }
      });
 }
 

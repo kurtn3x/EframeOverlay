@@ -9,7 +9,6 @@ use app::TemplateApp;
 fn main() {
     use egui::Pos2;
 
-
     let native_options = eframe::NativeOptions{
         initial_window_pos: Some(TemplateApp::default().window_pos),
         initial_window_size : Some(TemplateApp::default().window_size),

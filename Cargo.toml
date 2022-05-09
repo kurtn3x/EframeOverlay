@@ -19,4 +19,3 @@ livesplit-hotkey = "0.6.0"
 
 [replace]
 "winit:0.26.1" = { path = "winit" }
-"enigo:0.0.14" = {path = "enigo"}

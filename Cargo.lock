@@ -9,7 +9,7 @@ dependencies = [
  "clipboard",
  "eframe",
  "egui",
- "enigo 0.0.14 (registry+https://github.com/rust-lang/crates.io-index)",
+ "enigo",
  "inputbot",
  "livesplit-hotkey",
  "rev_lines",
@@ -517,6 +517,8 @@ dependencies = [
 [[package]]
 name = "enigo"
 version = "0.0.14"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "95ce8d7672e87b3155fd5e8a9226276da5c833e15bc879c7b98a78f743b67814"
 dependencies = [
  "core-graphics 0.18.0",
  "libc",
@@ -525,13 +527,6 @@ dependencies = [
  "unicode-segmentation",
  "winapi",
 ]
-
-[[package]]
-name = "enigo"
-version = "0.0.14"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "95ce8d7672e87b3155fd5e8a9226276da5c833e15bc879c7b98a78f743b67814"
-replace = "enigo 0.0.14"
 
 [[package]]
 name = "enum_derive"
