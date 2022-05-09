@@ -11,8 +11,7 @@ use std::fs::File;
 use inputbot;
 extern crate clipboard;
 use clipboard::ClipboardProvider;
-extern crate livesplit_hotkey;
-use livesplit_hotkey::*;
+
 
 
 
@@ -28,6 +27,9 @@ pub struct TemplateApp {
 
     // continous runmode, always true
     runmode_continuous: bool,
+
+    // only runs for 1. frame
+    first_run : bool,
 
     // if cursor events should pass trough the window
     // cursor hittest true: events dont pass trough the window
@@ -51,6 +53,13 @@ pub struct TemplateApp {
 
     clipboard_manager: clipboard::ClipboardContext,
 
+    hotkey_item_inspection_pressed : bool,
+    hotkey_item_inspection_pressed_initial_position: Pos2,
+
+
+    some_val : i32,
+    hotkey_item_inspection_pressed_first: bool,
+
 }
 
 impl Default for TemplateApp {
@@ -66,6 +75,11 @@ impl Default for TemplateApp {
             window_pos: Pos2 { x: 0.0, y: 0.0 },
             some_window_open : false,
             clipboard_manager : ClipboardProvider::new().unwrap(),
+            first_run : true,
+            hotkey_item_inspection_pressed : false,
+            some_val : 0,
+            hotkey_item_inspection_pressed_initial_position: Pos2 { x: 0.0, y: 0.0 },
+            hotkey_item_inspection_pressed_first: true,
 
         }
     }
@@ -112,16 +126,14 @@ impl TemplateApp {
         frame.set_window_size(self.window_size);
     }
 
-    fn parse_clipboard(&mut self){
-        let z = self.clipboard_manager.get_contents().unwrap();
+    fn parse_clipboard(&mut self) -> String{
+        let current_clipboard = self.clipboard_manager.get_contents().unwrap();
         let mut enigo = Enigo::new();
         enigo.key_down(enigo::Key::Control);
         enigo.key_down(enigo::Key::Layout('c'));
         enigo.key_up(enigo::Key::Control);
         enigo.key_up(enigo::Key::Layout('c'));
-        println!("{:?}", z);
-
-        // self.clipboard_manager.set_contents(z); 
+        current_clipboard
     }
 }
 
@@ -130,46 +142,31 @@ impl eframe::App for TemplateApp {
         egui::Rgba::TRANSPARENT
     }
 
-    
-
     fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
         let Self { label, value, runmode_continuous,
              cursor_hittest, show_window_1, window_pos, window_size,
-             edit_mode, some_window_open, clipboard_manager
+             edit_mode, some_window_open, clipboard_manager, first_run
+             , hotkey_item_inspection_pressed, some_val, hotkey_item_inspection_pressed_initial_position,
+             hotkey_item_inspection_pressed_first
          } = self;
 
-
-
-        if self.some_window_open{
-            egui::Window::new("Window2")
-            .resizable(true)
-            .default_pos(Pos2{x: 100.0, y: 100.0})
-            .frame(egui::Frame{
-                fill: egui::Color32::from_rgba_premultiplied(180, 180, 180, 180),
-                ..egui::Frame::default()
-            })
-            .collapsible(false)
-            .show(ctx, |ui| {
-               ui.visuals_mut().override_text_color = Some(egui::Color32::BLACK);
-               ui.label("Test" )});
-        }
-             
-        
         // getting our cursor position to check if our cursor is hovering over a specific thing
 
         //only works for windows
         // let temp_cursor: (i32, i32) = (0,0);
         let temp_cursor: (i32, i32) = enigo::Enigo::mouse_location();
         let cursor_location = Pos2{x: (temp_cursor.0 as f32 - window_pos.x),
-             y: (temp_cursor.1 as f32 - window_pos.y)};
+            y: (temp_cursor.1 as f32 - window_pos.y)};
         
-        let x = egui::PointerState::default();
-        println!("sdsd {:?}", x.velocity());
+        if self.first_run{
+            self.update_window(frame);
+            self.first_run = false;
+        }
 
-        
-                
-        if inputbot::KeybdKey::CapsLockKey.is_pressed(){
-            self.parse_clipboard();
+        if inputbot::KeybdKey::NumLockKey.is_toggled() && self.hotkey_item_inspection_pressed == false {
+            let current_clipboard = self.parse_clipboard();
+            self.hotkey_item_inspection_pressed = true;
+            self.hotkey_item_inspection_pressed_first = true;
         }
 
 
@@ -188,23 +185,18 @@ impl eframe::App for TemplateApp {
             frame.set_cursor_hittest(false);
         }
 
-
-    //     while inputbot::KeybdKey::RKey.is_pressed(){
-    //         println!("W");
-    //         self.parse_clipboard()
-    //    } 
-
         // set slightly darker background color in edit mode so we know we are in it
         let background_color = if self. edit_mode { egui::Color32::from_rgba_premultiplied(18, 18, 18, 180)} 
             else { egui::Color32::TRANSPARENT };
         
         // the main panel that covers almost the full screen
         show_central_panel(ctx, frame, background_color, cursor_location, self);
-         // bottom panel
+        
+        // bottom panel
         show_bottom_panel(ctx, frame,cursor_location, self);
 
         if self.show_window_1{
-            egui::Window::new("Window")
+            egui::Window::new("Window2")
             .resizable(true)
             .default_pos(Pos2{x: 100.0, y: 100.0})
             .frame(egui::Frame{
@@ -215,7 +207,41 @@ impl eframe::App for TemplateApp {
             .show(ctx, |ui| {
                 ui.visuals_mut().override_text_color = Some(egui::Color32::BLACK);
                 ui.label("{}", );
+                
             });
+        }
+
+
+
+        if self.hotkey_item_inspection_pressed{
+            self.hotkey_item_inspection_pressed_initial_position = if self.hotkey_item_inspection_pressed_first { cursor_location } else { self.hotkey_item_inspection_pressed_initial_position };
+            egui::Window::new("Window")
+            .current_pos(self.hotkey_item_inspection_pressed_initial_position)
+            .resizable(true)
+            .frame(egui::Frame{
+                fill: egui::Color32::from_rgba_premultiplied(180, 180, 180, 180),
+                ..egui::Frame::default()
+            })
+            .collapsible(false)
+            .show(ctx, |ui| {
+                ui.visuals_mut().override_text_color = Some(egui::Color32::BLACK);
+                self.some_val += 1;
+                let temp = self.some_val.to_string();
+                ui.label(temp);
+                let inspection_window_close_button = ui.add(egui::Button::new("Close").fill(egui::Color32::WHITE));
+                if inspection_window_close_button.rect.contains(cursor_location) {
+                    self.cursor_hittest = true;
+                    if inspection_window_close_button.clicked(){
+                        self.hotkey_item_inspection_pressed = false;
+
+                    }
+                }
+
+            });
+            self.hotkey_item_inspection_pressed_first = false;
+            // if inputbot::KeybdKey::CapsLockKey.is_toggled() && self.hotkey_item_inspection_pressed == true {
+            //     self.hotkey_item_inspection_pressed = false;
+            // }
          }
 
     }
@@ -276,12 +302,15 @@ fn show_bottom_panel(
        ..egui::Frame::default()
    })
     .show(ctx, |ui| {
-       egui::menu::bar(ui, |ui| {
-           ui.add_space(100.0);
+        egui::menu::bar(ui, |ui| {
+            ui.add_space(100.0);
            let quit_button = ui.add(egui::Button::new("Quit").fill(egui::Color32::WHITE));
-           if quit_button.clicked() {
-                   frame.quit();
-           };
-       });
+        if quit_button.rect.contains(cursor_location){
+            app.cursor_hittest = true;
+            if quit_button.clicked() {
+                    frame.quit();
+            };
+        }
+        });
    });
 }
