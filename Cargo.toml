@@ -13,6 +13,10 @@ winit = "0.26.1"
 enigo = "0.0.14"
 rev_lines = "0.2.1"
 inputbot = "0.5.1"
+xdotool = "0.0.2"
+clipboard = "0.5.0"
+livesplit-hotkey = "0.6.0"
 
 [replace]
 "winit:0.26.1" = { path = "winit" }
+"enigo:0.0.14" = {path = "enigo"}
