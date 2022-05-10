@@ -121,13 +121,20 @@ impl TemplateApp {
     }
 
     // no use for now
-    fn update_window(&self, frame: &mut eframe::Frame){
+    fn update_window(&self, frame: &mut eframe::Frame, pixels_per_point:f32){
         frame.set_window_pos(self.window_pos);
-        frame.set_window_size(self.window_size);
+        // println!("{}", (self.window_size.x / pixels_per_point));
+        frame.set_window_size(Vec2{x: (self.window_size.x / pixels_per_point), y: (self.window_size.y/ pixels_per_point)});
+        // frame.set_window_size(self.window_size);
+
     }
 
     fn parse_clipboard(&mut self) -> String{
-        let current_clipboard = self.clipboard_manager.get_contents().unwrap();
+        let  current_clipboard_temp = self.clipboard_manager.get_contents();
+        let current_clipboard = match current_clipboard_temp {
+            Ok(clipboard_data) => clipboard_data,
+            Err(error) => String::from("None"),
+        };
         let mut enigo = Enigo::new();
         enigo.key_down(enigo::Key::Control);
         enigo.key_down(enigo::Key::Layout('c'));
@@ -150,6 +157,8 @@ impl eframe::App for TemplateApp {
              hotkey_item_inspection_pressed_first
          } = self;
 
+         ctx.debug_painter();
+
         // getting our cursor position to check if our cursor is hovering over a specific thing
 
         //only works for windows
@@ -159,11 +168,14 @@ impl eframe::App for TemplateApp {
             y: (temp_cursor.1 as f32 - window_pos.y)};
         
         if self.first_run{
-            self.update_window(frame);
+            let pixels_per_point = ctx.pixels_per_point();
+            self.update_window(frame,pixels_per_point);
             self.first_run = false;
+            ctx.set_pixels_per_point(1.0);
         }
 
-        if inputbot::KeybdKey::NumLockKey.is_toggled() && self.hotkey_item_inspection_pressed == false {
+        if inputbot::KeybdKey::CapsLockKey.is_pressed() && self.hotkey_item_inspection_pressed == false {
+            println!("WASD");
             let current_clipboard = self.parse_clipboard();
             self.hotkey_item_inspection_pressed = true;
             self.hotkey_item_inspection_pressed_first = true;
@@ -210,8 +222,6 @@ impl eframe::App for TemplateApp {
                 
             });
         }
-
-
 
         if self.hotkey_item_inspection_pressed{
             self.hotkey_item_inspection_pressed_initial_position = if self.hotkey_item_inspection_pressed_first { cursor_location } else { self.hotkey_item_inspection_pressed_initial_position };
@@ -296,15 +306,15 @@ fn show_bottom_panel(
     cursor_location: Pos2,
     app: &mut TemplateApp,
 ) {
-    egui::TopBottomPanel::bottom("top_panel")
+    egui::TopBottomPanel::bottom("bottom_panel")
     .frame(egui::Frame{
        fill: egui::Color32::TRANSPARENT,
        ..egui::Frame::default()
-   })
+    })
+    .min_height(100.0)
     .show(ctx, |ui| {
         egui::menu::bar(ui, |ui| {
-            ui.add_space(100.0);
-           let quit_button = ui.add(egui::Button::new("Quit").fill(egui::Color32::WHITE));
+           let quit_button = ui.add_sized(Vec2{x:100.0, y:50.0},egui::Button::new("Quit").fill(egui::Color32::WHITE));
         if quit_button.rect.contains(cursor_location){
             app.cursor_hittest = true;
             if quit_button.clicked() {
