@@ -175,12 +175,10 @@ impl eframe::App for TemplateApp {
         }
 
         if inputbot::KeybdKey::CapsLockKey.is_pressed() && self.hotkey_item_inspection_pressed == false {
-            println!("WASD");
             let current_clipboard = self.parse_clipboard();
             self.hotkey_item_inspection_pressed = true;
             self.hotkey_item_inspection_pressed_first = true;
         }
-
 
         // update our window all the time with a small sleep value to reduce CPU usage 
 
@@ -196,27 +194,24 @@ impl eframe::App for TemplateApp {
         } else {
             frame.set_cursor_hittest(false);
         }
-
-        // set slightly darker background color in edit mode so we know we are in it
-        let background_color = if self. edit_mode { egui::Color32::from_rgba_premultiplied(18, 18, 18, 180)} 
-            else { egui::Color32::TRANSPARENT };
         
         // the main panel that covers almost the full screen
-        show_central_panel(ctx, frame, background_color, cursor_location, self);
+        show_central_panel(ctx, frame, self.edit_mode, cursor_location, self);
         
         // bottom panel
         show_bottom_panel(ctx, frame,cursor_location, self);
 
         if self.show_window_1{
-            egui::Window::new("Window2")
-            .resizable(true)
-            .default_pos(Pos2{x: 100.0, y: 100.0})
+            egui::Window::new("Some Window")
+            .resizable(false)
+            .anchor(egui::Align2::CENTER_CENTER, Vec2{x:0.0, y:0.0})
             .frame(egui::Frame{
-                fill: egui::Color32::from_rgba_premultiplied(180, 180, 180, 180),
+                fill: egui::Color32::from_rgba_premultiplied(180, 180, 180, 255),
                 ..egui::Frame::default()
             })
             .collapsible(false)
             .show(ctx, |ui| {
+                ui.set_min_size(Vec2{x:300.0, y:150.0});
                 ui.visuals_mut().override_text_color = Some(egui::Color32::BLACK);
                 ui.label("{}", );
                 
@@ -225,7 +220,7 @@ impl eframe::App for TemplateApp {
 
         if self.hotkey_item_inspection_pressed{
             self.hotkey_item_inspection_pressed_initial_position = if self.hotkey_item_inspection_pressed_first { cursor_location } else { self.hotkey_item_inspection_pressed_initial_position };
-            egui::Window::new("Window")
+            egui::Window::new("Item Inspection")
             .current_pos(self.hotkey_item_inspection_pressed_initial_position)
             .resizable(true)
             .frame(egui::Frame{
@@ -260,44 +255,82 @@ impl eframe::App for TemplateApp {
 fn show_central_panel(
     ctx: &egui::Context,
     frame: &mut eframe::Frame,
-    background_color: egui::Color32,
+    edit_mode: bool,
     cursor_location: Pos2,
     app: &mut TemplateApp,
 ) {
-    egui::CentralPanel::default()
-    .frame(egui::Frame{
-        fill: background_color,
-        ..egui::Frame::default()
-    })
-    .show(ctx, |ui| {
-        let open_butt = ui.add(egui::Button::new("Open Window").fill(egui::Color32::WHITE));
-        // println!("EDITLOC {:?}", ui.next_widget_position());
-        let edit_butt = ui.add(egui::Button::new("Edit Mode").fill(egui::Color32::WHITE));
+    // set slightly darker background color in edit mode so we know we are in it
+    // let background_color = if edit_mode { egui::Color32::from_rgba_premultiplied(18, 18, 18, 180)} 
+    //     else { egui::Color32::TRANSPARENT };
+    if edit_mode {
+        egui::CentralPanel::default()
+        .frame(egui::Frame{
+            fill: egui::Color32::from_rgba_premultiplied(18, 18, 18, 180),
+            ..egui::Frame::default()
+        })
+        .show(ctx, |ui| {
+            let open_butt = ui.add_sized(Vec2{x: 100.0, y: 50.0},egui::Button::new("Open Window").fill(egui::Color32::WHITE));
+            let edit_butt = ui.add_sized(Vec2{x: 100.0, y: 50.0},egui::Button::new("Edit Mode").fill(egui::Color32::WHITE));
 
-
-        if edit_butt.rect.contains(cursor_location) {
-            app.cursor_hittest = true;
-            if edit_butt.clicked(){
-                app.toogle_edit_mode();
+            if edit_butt.rect.contains(cursor_location) {
+                app.cursor_hittest = true;
+                if edit_butt.clicked(){
+                    app.toogle_edit_mode();
+                }
+            } else if open_butt.rect.contains(cursor_location)  {
+                app.cursor_hittest = true;
+                if open_butt.clicked(){
+                    app.toogle_show_window1();
+                }
+            } else {
+                // edit mode on
+                if app.edit_mode{
+                    app.cursor_hittest = true;
+                } 
+                // dont capture any inputs
+                else {
+                    app.cursor_hittest = false;
+                }
             }
             
+            
+            ;
+        });
+    } 
+    // EDIT MODE WINDOW
+    else {
+        egui::CentralPanel::default()
+        .frame(egui::Frame{
+            fill: egui::Color32::TRANSPARENT,
+            ..egui::Frame::default()
+        })
+        .show(ctx, |ui| {
+            let open_butt = ui.add_sized(Vec2{x: 100.0, y: 50.0},egui::Button::new("Open Window").fill(egui::Color32::WHITE));
+            let edit_butt = ui.add_sized(Vec2{x: 100.0, y: 50.0},egui::Button::new("Edit Mode").fill(egui::Color32::WHITE));
 
-        } else if open_butt.rect.contains(cursor_location)  {
-            app.cursor_hittest = true;
-            if open_butt.clicked(){
-                app.toogle_show_window1();
-            }
-        } else {
-            // edit mode on
-            if app.edit_mode{
+            if edit_butt.rect.contains(cursor_location) {
                 app.cursor_hittest = true;
-            } 
-            // dont capture any inputs
-            else {
-                app.cursor_hittest = false;
+                if edit_butt.clicked(){
+                    app.toogle_edit_mode();
+                }
+            } else if open_butt.rect.contains(cursor_location)  {
+                app.cursor_hittest = true;
+                if open_butt.clicked(){
+                    app.toogle_show_window1();
+                }
+            } else {
+                // edit mode on
+                if app.edit_mode{
+                    app.cursor_hittest = true;
+                } 
+                // dont capture any inputs
+                else {
+                    app.cursor_hittest = false;
+                }
             }
         }
-     });
+    );
+    }
 }
 
 fn show_bottom_panel(
