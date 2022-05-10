@@ -1,0 +1,1 @@
+let open_butt = ui.add_sized(Vec2{x: 100.0, y: 50.0},egui::Button::new(RichText::new("Open Window").size(40.0)).fill(egui::Color32::WHITE));
