@@ -262,6 +262,7 @@ fn show_central_panel(
     // set slightly darker background color in edit mode so we know we are in it
     // let background_color = if edit_mode { egui::Color32::from_rgba_premultiplied(18, 18, 18, 180)} 
     //     else { egui::Color32::TRANSPARENT };
+    //EDIT MODE WINDOW
     if edit_mode {
         egui::CentralPanel::default()
         .frame(egui::Frame{
@@ -292,12 +293,20 @@ fn show_central_panel(
                     app.cursor_hittest = false;
                 }
             }
-            
-            
+            let painter = ui.painter();
+            let rect = ui.max_rect();
+            painter.text(
+                egui::Pos2{x: rect.center_top().x ,y: rect.center_top().y + 15.0},
+                egui::Align2::CENTER_CENTER,
+                "Edit Mode enabled",
+                egui::FontId{size: 25.0, family: egui::FontFamily::Monospace},
+                egui::Color32::GREEN,
+            );
+
             ;
         });
     } 
-    // EDIT MODE WINDOW
+    // DEFAULT BACKGROUND
     else {
         egui::CentralPanel::default()
         .frame(egui::Frame{
