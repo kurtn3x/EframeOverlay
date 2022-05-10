@@ -1,6 +1,7 @@
 use std::time::Duration;
 extern crate enigo;
 use eframe::epaint::text::cursor;
+use egui::Rect;
 use egui::plot::{Plot, PlotUi};
 use enigo::{Enigo, MouseControllable, KeyboardControllable};
 use egui::{style::Visuals, Pos2, Vec2, Style};
@@ -204,9 +205,9 @@ impl eframe::App for TemplateApp {
         if self.show_window_1{
             egui::Window::new("Some Window")
             .resizable(false)
-            .anchor(egui::Align2::CENTER_CENTER, Vec2{x:0.0, y:0.0})
+            .default_pos(Pos2{x: 100.0, y: 100.0})
             .frame(egui::Frame{
-                fill: egui::Color32::from_rgba_premultiplied(180, 180, 180, 255),
+                fill: egui::Color32::from_rgba_premultiplied(180, 180, 180, 180),
                 ..egui::Frame::default()
             })
             .collapsible(false)
@@ -302,6 +303,23 @@ fn show_central_panel(
                 egui::FontId{size: 25.0, family: egui::FontFamily::Monospace},
                 egui::Color32::GREEN,
             );
+
+            egui::Window::new("Edit Mode Window")
+            .resizable(false)
+            .anchor(egui::Align2::CENTER_CENTER, Vec2{x:0.0, y:-40.0})
+            .frame(egui::Frame{
+                fill: egui::Color32::from_rgba_premultiplied(180, 180, 180, 255),
+                ..egui::Frame::default()
+            })
+            .collapsible(false)
+            .title_bar(false)
+            .show(ctx, |ui| {
+                ui.set_min_size(Vec2{x:850.0, y:900.0});
+                ui.visuals_mut().override_text_color = Some(egui::Color32::BLACK);
+                egui::TopBottomPanel::top("ww").show_inside(ui, |ui|{
+                    ui.label("www");
+                })
+            });
 
             ;
         });
