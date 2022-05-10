@@ -166,6 +166,11 @@ impl eframe::App for TemplateApp {
         let temp_cursor: (i32, i32) = enigo::Enigo::mouse_location();
         let cursor_location = Pos2{x: (temp_cursor.0 as f32 - window_pos.x), y: (temp_cursor.1 as f32 - window_pos.y)};
 
+        if ctx.input().key_released(egui::Key::Tab){
+            println!("{}", self.some_val);
+            self.some_val += 1;
+        }
+
         // this will set up the windo and fix dpi errors, idk how this runs some resolutions, only tested 1920x1080
         if self.first_run{
             let pixels_per_point = ctx.pixels_per_point();
