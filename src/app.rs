@@ -178,23 +178,21 @@ impl eframe::App for TemplateApp {
             self.update_window(frame,pixels_per_point);
             self.first_run = false;
             ctx.set_pixels_per_point(1.0);
-            let some_hotkey = Hotkey::new(vec![inputbot::KeybdKey::CapsLockKey, inputbot::KeybdKey::TabKey], String::from("first_hotkey"));
-            self.hotkeys.push(some_hotkey);
-            let another_hotkey = Hotkey::new(vec![inputbot::KeybdKey::SKey, inputbot::KeybdKey::LControlKey], String::from("second_hotkey"));
-            self.hotkeys.push(another_hotkey);
+            let hotkey_with_2_keys = Hotkey::new(vec![inputbot::KeybdKey::CapsLockKey, inputbot::KeybdKey::TabKey], "first_hotkey");
+            self.hotkeys.push(hotkey_with_2_keys);
+            let hotkey_with_1_key = Hotkey::new(vec![inputbot::KeybdKey::LControlKey], "second_hotkey");
+            self.hotkeys.push(hotkey_with_1_key);
 
         }
-    
-
 
         for hotkey in self.hotkeys.iter_mut(){
-            if hotkey.identifier == String::from("first_hotkey"){
+            if hotkey.identifier == "first_hotkey"{
                 if hotkey.check(){
                     println!("CapsLock + Tab pressed!");
                 }
-            } else if hotkey.identifier == String::from("second_hotkey"){
+            } else if hotkey.identifier == "second_hotkey"{
                 if hotkey.check(){
-                    println!("LeftControl + S pressed!");
+                    println!("LeftControl released!");
                 }
             }
         }

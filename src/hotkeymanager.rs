@@ -5,13 +5,13 @@ pub struct Hotkey{
     key_state : Vec<i16>,
     activated : Vec<bool>,
     key: Vec<inputbot::KeybdKey>,
-    pub identifier: String,
+    pub identifier: &'static str,
     block: bool,
 }
 
 impl Hotkey{
 
-    pub fn new(key: Vec<inputbot::KeybdKey>, identifier: String) -> Hotkey{
+    pub fn new(key: Vec<inputbot::KeybdKey>, identifier: &'static str) -> Hotkey{
         let mut tmp_cr_key_state: Vec<i16> = vec![];
         let mut tmp_cr_activated: Vec<bool> = vec![];
 
