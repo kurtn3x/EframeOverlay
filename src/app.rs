@@ -14,6 +14,25 @@ extern crate clipboard;
 use clipboard::ClipboardProvider;
 use crate::main_window::MainWindow;
 
+struct Hotkey{
+    key_state : i16,
+    activated : bool,
+    key: inputbot::KeybdKey,
+}
+
+impl Hotkey{
+    pub fn new(key: inputbot::KeybdKey) -> Hotkey{
+        Hotkey{key_state: inputbot::KeybdKey::CapsLockKey.is_down(10).0,
+            activated: inputbot::KeybdKey::CapsLockKey.is_down(10).1
+            , key: key}
+    }
+
+    pub fn check(&mut self) -> bool{
+        let (temp1, temp2) = self.key.is_down(self.key_state);
+        self.key_state = temp1;
+        return temp2;
+    }
+}
 pub struct TemplateApp {
     // only runs on first frame or when window is reinitialized
     first_run : bool,
@@ -54,6 +73,8 @@ pub struct TemplateApp {
 
     previous_key_sate : i16,
 
+    hotkeys : Vec<Hotkey>,
+
 }
 
 impl Default for TemplateApp {
@@ -75,6 +96,7 @@ impl Default for TemplateApp {
             item_info : String::from("NoneItem"),
             current_clipboard: String::from("NoneCurrent"),
             previous_key_sate : 1,
+            hotkeys : vec![],
         }
     }
 }
@@ -163,7 +185,7 @@ impl eframe::App for TemplateApp {
             edit_mode, some_window_open, clipboard_manager, first_run,
             hotkey_item_inspection_pressed, some_val, hotkey_item_inspection_pressed_initial_position,
             hotkey_item_inspection_pressed_first, edit_mode_tab, item_info, current_clipboard,
-            previous_key_sate
+            previous_key_sate, hotkeys
         } = self;
 
         // getting our cursor position to check if our cursor is hovering over a specific thing . windows only
@@ -176,28 +198,28 @@ impl eframe::App for TemplateApp {
             self.update_window(frame,pixels_per_point);
             self.first_run = false;
             ctx.set_pixels_per_point(1.0);
-        }
-        // mki_fork::register_hotkey(&[mki_fork::Keyboard::CapsLock], || println!("CTRL+B pressed"));
-
-        if inputbot::KeybdKey::CapsLockKey.is_pressed() && self.hotkey_item_inspection_pressed == false {
-            self.parse_clipboard();
-            self.hotkey_item_inspection_pressed = true;
-            self.hotkey_item_inspection_pressed_first = true;
-
+            let some_hotkey = Hotkey::new(inputbot::KeybdKey::CapsLockKey);
+            self.hotkeys.push(some_hotkey);
         }
 
-        let (temp1, temp2) = inputbot::KeybdKey::TabKey.is_down(self.previous_key_sate);
-        self.previous_key_sate = temp1;
-        if temp2 == true {
-            println!("LLOOOOOL")
+        for hotkey in self.hotkeys.iter_mut(){
+            if hotkey.check(){
+                println!("{}", self.some_val);
+                self.some_val += 1;
+            }
+
+
         }
 
-
-
-        // if mki_fork::are_pressed(&[mki_fork::Keyboard::CapsLock]){
-        //     println!("{}", self.some_val);
-        //     self.some_val += 1
+        // let (temp1, temp2) = inputbot::KeybdKey::CapsLockKey.is_down(self.previous_key_sate);
+        // self.previous_key_sate = temp1;
+        // if temp2 == true && self.hotkey_item_inspection_pressed == false {
+        //     self.hotkey_item_inspection_pressed = true;
+        //     self.hotkey_item_inspection_pressed_first = true;
+        // } else if temp2 == true && self.hotkey_item_inspection_pressed == true {
+        //     self.hotkey_item_inspection_pressed = false;
         // }
+
 
         // if true: our window has control of input (as normal), 
         // if false: our window lets any input trough to the next window

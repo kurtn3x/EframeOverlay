@@ -3,6 +3,7 @@
 mod app;
 use app::TemplateApp;
 mod main_window;
+mod hotkeymanager;
 
 // When compiling natively:
 #[cfg(not(target_arch = "wasm32"))]
