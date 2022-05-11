@@ -14,6 +14,7 @@ dependencies = [
  "mki_fork",
  "rev_lines",
  "winit 0.26.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "winput",
 ]
 
 [[package]]
@@ -1906,6 +1907,15 @@ version = "0.26.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9b43cc931d58b99461188607efd7acb2a093e65fc621f54cad78517a6063e73a"
 replace = "winit 0.26.1"
+
+[[package]]
+name = "winput"
+version = "0.2.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dd4bec39938e0ae68b300e2a4197b6437f13d53d1c146c6e297e346a71d5dde9"
+dependencies = [
+ "winapi",
+]
 
 [[package]]
 name = "x11"

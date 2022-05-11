@@ -22,6 +22,19 @@ impl KeybdKey {
         (unsafe { GetAsyncKeyState(u64::from(self) as i32) } >> 15) != 0
     }
 
+    pub fn is_down(self, prev: i16) -> (i16, bool){
+        let state = (unsafe { GetAsyncKeyState(u64::from(self) as i32) } >> 15);
+        if prev == -1 {
+            if state == 0{
+                return (10, true)
+            } else {
+                return (state, false)
+            }
+        } else {
+            return (state, false)
+        }
+    }
+
     /// Presses a given `KeybdKey`. Note: this means the key will remain in the down
     /// position. You must manually call release to create a full 'press'.
     pub fn press(self) {

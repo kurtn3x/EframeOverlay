@@ -13,7 +13,6 @@ use inputbot;
 extern crate clipboard;
 use clipboard::ClipboardProvider;
 use crate::main_window::MainWindow;
-extern crate mki_fork;
 
 pub struct TemplateApp {
     // only runs on first frame or when window is reinitialized
@@ -53,6 +52,8 @@ pub struct TemplateApp {
     item_info : String,
     current_clipboard: String,
 
+    previous_key_sate : i16,
+
 }
 
 impl Default for TemplateApp {
@@ -73,6 +74,7 @@ impl Default for TemplateApp {
             edit_mode_tab : vec![true, false, false],
             item_info : String::from("NoneItem"),
             current_clipboard: String::from("NoneCurrent"),
+            previous_key_sate : 1,
         }
     }
 }
@@ -81,6 +83,7 @@ impl TemplateApp {
     /// Called once before the first frame.
     pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
         Default::default()
+
     }
 
     // just decides if the subwindow created is shown or hidden
@@ -159,17 +162,13 @@ impl eframe::App for TemplateApp {
             cursor_hittest, show_window_1, window_pos, window_size,
             edit_mode, some_window_open, clipboard_manager, first_run,
             hotkey_item_inspection_pressed, some_val, hotkey_item_inspection_pressed_initial_position,
-            hotkey_item_inspection_pressed_first, edit_mode_tab, item_info, current_clipboard
+            hotkey_item_inspection_pressed_first, edit_mode_tab, item_info, current_clipboard,
+            previous_key_sate
         } = self;
 
         // getting our cursor position to check if our cursor is hovering over a specific thing . windows only
         let temp_cursor: (i32, i32) = enigo::Enigo::mouse_location();
         let cursor_location = Pos2{x: (temp_cursor.0 as f32 - window_pos.x), y: (temp_cursor.1 as f32 - window_pos.y)};
-
-        if ctx.input().key_released(egui::Key::Tab){
-            println!("{}", self.some_val);
-            self.some_val += 1;
-        }
 
         // this will set up the windo and fix dpi errors, idk how this runs some resolutions, only tested 1920x1080
         if self.first_run{
@@ -180,13 +179,19 @@ impl eframe::App for TemplateApp {
         }
         // mki_fork::register_hotkey(&[mki_fork::Keyboard::CapsLock], || println!("CTRL+B pressed"));
 
-
         if inputbot::KeybdKey::CapsLockKey.is_pressed() && self.hotkey_item_inspection_pressed == false {
             self.parse_clipboard();
             self.hotkey_item_inspection_pressed = true;
             self.hotkey_item_inspection_pressed_first = true;
 
         }
+
+        let (temp1, temp2) = inputbot::KeybdKey::TabKey.is_down(self.previous_key_sate);
+        self.previous_key_sate = temp1;
+        if temp2 == true {
+            println!("LLOOOOOL")
+        }
+
 
 
         // if mki_fork::are_pressed(&[mki_fork::Keyboard::CapsLock]){
@@ -232,7 +237,6 @@ impl eframe::App for TemplateApp {
         }
 
         if self.hotkey_item_inspection_pressed{
-
             self.hotkey_item_inspection_pressed_initial_position = if self.hotkey_item_inspection_pressed_first { cursor_location } else { self.hotkey_item_inspection_pressed_initial_position };
             egui::Window::new("Item Inspection")
             .current_pos(self.hotkey_item_inspection_pressed_initial_position)
@@ -254,6 +258,7 @@ impl eframe::App for TemplateApp {
                         self.hotkey_item_inspection_pressed = false;
 
                     }
+
                 }
             });
             self.hotkey_item_inspection_pressed_first = false;
