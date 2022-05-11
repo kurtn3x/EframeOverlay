@@ -15,22 +15,83 @@ use clipboard::ClipboardProvider;
 use crate::main_window::MainWindow;
 
 struct Hotkey{
-    key_state : i16,
-    activated : bool,
-    key: inputbot::KeybdKey,
+    key_state : Vec<i16>,
+    activated : Vec<bool>,
+    key: Vec<inputbot::KeybdKey>,
+    block: bool,
 }
 
 impl Hotkey{
-    pub fn new(key: inputbot::KeybdKey) -> Hotkey{
-        Hotkey{key_state: inputbot::KeybdKey::CapsLockKey.is_down(10).0,
-            activated: inputbot::KeybdKey::CapsLockKey.is_down(10).1
-            , key: key}
+    pub fn new(key: Vec<inputbot::KeybdKey>) -> Hotkey{
+        let mut tmp_cr_key_state: Vec<i16> = vec![];
+        let mut tmp_cr_activated: Vec<bool> = vec![];
+
+        for (i,p) in key.iter().enumerate(){
+            tmp_cr_key_state.push(10);
+            tmp_cr_activated.push(false);
+
+        }
+
+        Hotkey{key_state: tmp_cr_key_state,
+            activated: tmp_cr_activated,
+            key: key, block:false}
     }
 
     pub fn check(&mut self) -> bool{
-        let (temp1, temp2) = self.key.is_down(self.key_state);
-        self.key_state = temp1;
-        return temp2;
+        // when there are more than 1 keys assigned 
+        // this will return true as soon as THE ACTIVATIONS OF BOTH KEYS OVERLAP
+        // as soon as both key states are active, it will return true and block input
+        // until at least 1 of the keys is released
+        if self.key.len() > 1{
+            for (pos, key) in self.key.iter_mut().enumerate(){
+                let temp2 = key.is_pressed();
+                self.activated[pos] = temp2;
+            }
+
+            // check if the given keys are all activated, if yes set block to true and return true
+            if self.block == false {
+                let mut ret_checker: usize = 0;
+                for boolean in self.activated.iter(){
+                    if boolean == &true{
+                        ret_checker += 1;
+                    }
+                }
+
+                if ret_checker == self.key.len(){
+                    self.block = true;
+                    return true
+                } else {
+                    return false
+                }
+            }
+            // check if any of the keys are released, if yes set block to false
+            else{
+                let mut ret_checker: usize = 0;
+                for boolean in self.activated.iter(){
+                    if boolean == &true{
+                        ret_checker += 1;
+                    }
+                }
+                if ret_checker != self.key.len(){
+                    self.block = false;
+                    return false
+                } else {
+                    return false
+                }
+
+            } 
+        // when there is only 1 key assigned, its always at pos0, so why bother checking
+        // the key will return true WHEN IT IS RELEASED!!!!
+        } else if self.key.len() == 1 {
+            let (temp1, temp2) = self.key[0].is_down(self.key_state[0]);
+            self.key_state[0] = temp1;
+            self.activated[0] = temp2;
+            return self.activated[0]
+
+        }else {
+            return false;
+        }
+
     }
 }
 pub struct TemplateApp {
@@ -70,9 +131,6 @@ pub struct TemplateApp {
 
     item_info : String,
     current_clipboard: String,
-
-    previous_key_sate : i16,
-
     hotkeys : Vec<Hotkey>,
 
 }
@@ -95,7 +153,6 @@ impl Default for TemplateApp {
             edit_mode_tab : vec![true, false, false],
             item_info : String::from("NoneItem"),
             current_clipboard: String::from("NoneCurrent"),
-            previous_key_sate : 1,
             hotkeys : vec![],
         }
     }
@@ -185,20 +242,22 @@ impl eframe::App for TemplateApp {
             edit_mode, some_window_open, clipboard_manager, first_run,
             hotkey_item_inspection_pressed, some_val, hotkey_item_inspection_pressed_initial_position,
             hotkey_item_inspection_pressed_first, edit_mode_tab, item_info, current_clipboard,
-            previous_key_sate, hotkeys
+            hotkeys
         } = self;
 
         // getting our cursor position to check if our cursor is hovering over a specific thing . windows only
         let temp_cursor: (i32, i32) = enigo::Enigo::mouse_location();
         let cursor_location = Pos2{x: (temp_cursor.0 as f32 - window_pos.x), y: (temp_cursor.1 as f32 - window_pos.y)};
 
-        // this will set up the windo and fix dpi errors, idk how this runs some resolutions, only tested 1920x1080
+        // this will set up the windo and fix dpi errors as well as setup hotkeys, 
+        // idk how this runs some resolutions, only tested 1920x1080
+        // can also be reset to reinitialize windows / hotkeys
         if self.first_run{
             let pixels_per_point = ctx.pixels_per_point();
             self.update_window(frame,pixels_per_point);
             self.first_run = false;
             ctx.set_pixels_per_point(1.0);
-            let some_hotkey = Hotkey::new(inputbot::KeybdKey::CapsLockKey);
+            let some_hotkey = Hotkey::new(vec![inputbot::KeybdKey::CapsLockKey, inputbot::KeybdKey::TabKey]);
             self.hotkeys.push(some_hotkey);
         }
 
@@ -207,19 +266,7 @@ impl eframe::App for TemplateApp {
                 println!("{}", self.some_val);
                 self.some_val += 1;
             }
-
-
         }
-
-        // let (temp1, temp2) = inputbot::KeybdKey::CapsLockKey.is_down(self.previous_key_sate);
-        // self.previous_key_sate = temp1;
-        // if temp2 == true && self.hotkey_item_inspection_pressed == false {
-        //     self.hotkey_item_inspection_pressed = true;
-        //     self.hotkey_item_inspection_pressed_first = true;
-        // } else if temp2 == true && self.hotkey_item_inspection_pressed == true {
-        //     self.hotkey_item_inspection_pressed = false;
-        // }
-
 
         // if true: our window has control of input (as normal), 
         // if false: our window lets any input trough to the next window
