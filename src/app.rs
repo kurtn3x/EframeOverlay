@@ -13,87 +13,8 @@ use inputbot;
 extern crate clipboard;
 use clipboard::ClipboardProvider;
 use crate::main_window::MainWindow;
+use crate::hotkeymanager::Hotkey;
 
-struct Hotkey{
-    key_state : Vec<i16>,
-    activated : Vec<bool>,
-    key: Vec<inputbot::KeybdKey>,
-    block: bool,
-}
-
-impl Hotkey{
-    pub fn new(key: Vec<inputbot::KeybdKey>) -> Hotkey{
-        let mut tmp_cr_key_state: Vec<i16> = vec![];
-        let mut tmp_cr_activated: Vec<bool> = vec![];
-
-        for (i,p) in key.iter().enumerate(){
-            tmp_cr_key_state.push(10);
-            tmp_cr_activated.push(false);
-
-        }
-
-        Hotkey{key_state: tmp_cr_key_state,
-            activated: tmp_cr_activated,
-            key: key, block:false}
-    }
-
-    pub fn check(&mut self) -> bool{
-        // when there are more than 1 keys assigned 
-        // this will return true as soon as THE ACTIVATIONS OF BOTH KEYS OVERLAP
-        // as soon as both key states are active, it will return true and block input
-        // until at least 1 of the keys is released
-        if self.key.len() > 1{
-            for (pos, key) in self.key.iter_mut().enumerate(){
-                let temp2 = key.is_pressed();
-                self.activated[pos] = temp2;
-            }
-
-            // check if the given keys are all activated, if yes set block to true and return true
-            if self.block == false {
-                let mut ret_checker: usize = 0;
-                for boolean in self.activated.iter(){
-                    if boolean == &true{
-                        ret_checker += 1;
-                    }
-                }
-
-                if ret_checker == self.key.len(){
-                    self.block = true;
-                    return true
-                } else {
-                    return false
-                }
-            }
-            // check if any of the keys are released, if yes set block to false
-            else{
-                let mut ret_checker: usize = 0;
-                for boolean in self.activated.iter(){
-                    if boolean == &true{
-                        ret_checker += 1;
-                    }
-                }
-                if ret_checker != self.key.len(){
-                    self.block = false;
-                    return false
-                } else {
-                    return false
-                }
-
-            } 
-        // when there is only 1 key assigned, its always at pos0, so why bother checking
-        // the key will return true WHEN IT IS RELEASED!!!!
-        } else if self.key.len() == 1 {
-            let (temp1, temp2) = self.key[0].is_down(self.key_state[0]);
-            self.key_state[0] = temp1;
-            self.activated[0] = temp2;
-            return self.activated[0]
-
-        }else {
-            return false;
-        }
-
-    }
-}
 pub struct TemplateApp {
     // only runs on first frame or when window is reinitialized
     first_run : bool,
@@ -257,14 +178,24 @@ impl eframe::App for TemplateApp {
             self.update_window(frame,pixels_per_point);
             self.first_run = false;
             ctx.set_pixels_per_point(1.0);
-            let some_hotkey = Hotkey::new(vec![inputbot::KeybdKey::CapsLockKey, inputbot::KeybdKey::TabKey]);
+            let some_hotkey = Hotkey::new(vec![inputbot::KeybdKey::CapsLockKey, inputbot::KeybdKey::TabKey], String::from("first_hotkey"));
             self.hotkeys.push(some_hotkey);
+            let another_hotkey = Hotkey::new(vec![inputbot::KeybdKey::SKey, inputbot::KeybdKey::LControlKey], String::from("second_hotkey"));
+            self.hotkeys.push(another_hotkey);
+
         }
+    
+
 
         for hotkey in self.hotkeys.iter_mut(){
-            if hotkey.check(){
-                println!("{}", self.some_val);
-                self.some_val += 1;
+            if hotkey.identifier == String::from("first_hotkey"){
+                if hotkey.check(){
+                    println!("CapsLock + Tab pressed!");
+                }
+            } else if hotkey.identifier == String::from("second_hotkey"){
+                if hotkey.check(){
+                    println!("LeftControl + S pressed!");
+                }
             }
         }
 
