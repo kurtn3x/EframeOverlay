@@ -182,7 +182,6 @@ impl eframe::App for TemplateApp {
             self.hotkeys.push(hotkey_with_2_keys);
             let hotkey_with_1_key = Hotkey::new(vec![inputbot::KeybdKey::LControlKey], "second_hotkey");
             self.hotkeys.push(hotkey_with_1_key);
-
         }
 
         for hotkey in self.hotkeys.iter_mut(){

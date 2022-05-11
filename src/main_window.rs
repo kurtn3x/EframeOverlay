@@ -98,7 +98,20 @@ impl MainWindow <'_>{
                 })
 
             });
-            ui.heading("THIS IS TAB0");
+            ui.add_space(20.0);
+            ui.horizontal(|ui| {
+                ui.add_space(20.0);
+                ui.heading("THIS IS TAB0");
+                let mut selected = String::from("lol");
+                egui::ComboBox::from_label("Select one!")
+                .selected_text(format!("{:?}", selected))
+                .show_ui(ui, |ui| {
+                    ui.selectable_value(&mut selected, String::from("1"), "First");
+                    ui.selectable_value(&mut selected, String::from("2"), "Second");
+                    ui.selectable_value(&mut selected, String::from("3"), "Third");
+                });
+                println!("{}", selected);
+            });
         });
 
     }
