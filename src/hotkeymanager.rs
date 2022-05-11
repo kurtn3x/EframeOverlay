@@ -10,15 +10,16 @@ pub struct Hotkey{
 }
 
 impl Hotkey{
-
+    /// create a new shortcut available for checking
+    /// the identifier is needed to identify the hotkey later
+    /// this result should be pushed to a 'Vec<Hotkey>', in your main 
+    /// programm, you will iterate over this Vector and check each Hotkey
     pub fn new(key: Vec<inputbot::KeybdKey>, identifier: &'static str) -> Hotkey{
         let mut tmp_cr_key_state: Vec<i16> = vec![];
         let mut tmp_cr_activated: Vec<bool> = vec![];
-
-        for (i,p) in key.iter().enumerate(){
+        for item in key.iter(){
             tmp_cr_key_state.push(10);
             tmp_cr_activated.push(false);
-
         }
 
         Hotkey{key_state: tmp_cr_key_state,
@@ -26,6 +27,9 @@ impl Hotkey{
             key: key, block:false, identifier: identifier}
     }
 
+    /// check if this hotkey is pressed, depending on how many keys are given, this method acts differently 
+    /// 1 key: return true if the key is released 
+    /// more than 1 key: return true, when all the keys are activated at the same time for the first time, as soon as one of the keys is released, it can be repressed to return true again.
     pub fn check(&mut self) -> bool{
         // when there are more than 1 keys assigned 
         // this will return true as soon as THE ACTIVATIONS OF BOTH KEYS OVERLAP

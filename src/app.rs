@@ -191,9 +191,13 @@ impl eframe::App for TemplateApp {
                     println!("CapsLock + Tab pressed!");
                 }
             } else if hotkey.identifier == "second_hotkey"{
-                if hotkey.check(){
-                    println!("LeftControl released!");
-                }
+                let status = hotkey.check();
+                if status && self.hotkey_item_inspection_pressed == false {
+                    self.hotkey_item_inspection_pressed = true;
+                    self.hotkey_item_inspection_pressed_first = true;
+                } else if status && self.hotkey_item_inspection_pressed == true {
+                    self.hotkey_item_inspection_pressed = false;
+                } 
             }
         }
 
@@ -206,7 +210,6 @@ impl eframe::App for TemplateApp {
         }
         
         // the main panel that covers almost the full screen
-
         if self.edit_mode{
             let mut main_window = MainWindow{cursor_location, app: self, ctx, frame};
             main_window.run_edit()
