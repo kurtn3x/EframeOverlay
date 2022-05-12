@@ -1,5 +1,6 @@
 use crate::TemplateApp;
-use egui::{Pos2, Vec2, Widget, RichText};
+use eframe::Frame;
+use egui::{Pos2, Vec2, Widget, RichText, Context};
 pub struct MainWindow <'a>{
     pub cursor_location:  Pos2,
     pub app: &'a mut TemplateApp,
@@ -8,6 +9,7 @@ pub struct MainWindow <'a>{
 }
 
 impl MainWindow <'_>{
+
     pub fn run_edit(&mut self){
         egui::CentralPanel::default()
         .frame(egui::Frame{
@@ -18,23 +20,23 @@ impl MainWindow <'_>{
             let open_butt = ui.add_sized(Vec2{x: 100.0, y: 50.0},egui::Button::new(RichText::new("Open Window").size(16.0)).fill(egui::Color32::WHITE));
             let edit_butt = ui.add_sized(Vec2{x: 100.0, y: 50.0},egui::Button::new(RichText::new("Edit Mode").size(16.0)).fill(egui::Color32::WHITE));
             if edit_butt.rect.contains(self.cursor_location) {
-                self.app.cursor_hittest = true;
+                self.app.general_settings.cursor_hittest = true;
                 if edit_butt.clicked(){
                     self.app.toogle_edit_mode();
                 }
             } else if open_butt.rect.contains(self.cursor_location)  {
-                self.app.cursor_hittest = true;
+                self.app.general_settings.cursor_hittest = true;
                 if open_butt.clicked(){
                     self.app.toogle_show_window1();
                 }
             } else {
                 // edit mode on
                 if self.app.edit_mode{
-                    self.app.cursor_hittest = true;
+                    self.app.general_settings.cursor_hittest = true;
                 } 
                 // dont capture any inputs
                 else {
-                    self.app.cursor_hittest = false;
+                    self.app.general_settings.cursor_hittest = false;
                 }
             }
             let painter = ui.painter();
@@ -102,15 +104,13 @@ impl MainWindow <'_>{
             ui.horizontal(|ui| {
                 ui.add_space(20.0);
                 ui.heading("THIS IS TAB0");
-                let mut selected = String::from("lol");
                 egui::ComboBox::from_label("Select one!")
-                .selected_text(format!("{:?}", selected))
+                .selected_text(format!("{:?}", self.app.some_option))
                 .show_ui(ui, |ui| {
-                    ui.selectable_value(&mut selected, String::from("1"), "First");
-                    ui.selectable_value(&mut selected, String::from("2"), "Second");
-                    ui.selectable_value(&mut selected, String::from("3"), "Third");
+                    ui.selectable_value(&mut self.app.some_option, 1, "1");
+                    ui.selectable_value(&mut self.app.some_option, 2, "2");
+                    ui.selectable_value(&mut self.app.some_option, 3, "3");
                 });
-                println!("{}", selected);
             });
         });
 
@@ -212,23 +212,23 @@ impl MainWindow <'_>{
             let edit_butt = ui.add_sized(Vec2{x: 100.0, y: 50.0},egui::Button::new(RichText::new("Edit Mode").size(16.0)).fill(egui::Color32::WHITE));
 
             if edit_butt.rect.contains(self.cursor_location) {
-                self.app.cursor_hittest = true;
+                self.app.general_settings.cursor_hittest = true;
                 if edit_butt.clicked(){
                     self.app.toogle_edit_mode();
                 }
             } else if open_butt.rect.contains(self.cursor_location)  {
-                self.app.cursor_hittest = true;
+                self.app.general_settings.cursor_hittest = true;
                 if open_butt.clicked(){
                     self.app.toogle_show_window1();
                 }
             } else {
                 // edit mode on
                 if self.app.edit_mode{
-                    self.app.cursor_hittest = true;
+                    self.app.general_settings.cursor_hittest = true;
                 } 
                 // dont capture any inputs
                 else {
-                    self.app.cursor_hittest = false;
+                    self.app.general_settings.cursor_hittest = false;
                 }
             }
         }

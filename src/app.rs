@@ -14,17 +14,9 @@ extern crate clipboard;
 use clipboard::ClipboardProvider;
 use crate::main_window::MainWindow;
 use crate::hotkeymanager::Hotkey;
+use std::rc::Rc;
 
 pub struct TemplateApp {
-    // only runs on first frame or when window is reinitialized
-    first_run : bool,
-
-    // if cursor events should pass trough the window
-    // cursor hittest true: events dont pass trough the window
-    // cursor hittest false: events pass trough the window
-    // edit_mode is used for edit mode button, if it is set to true
-    // we have control of the window
-    pub cursor_hittest: bool,
     pub edit_mode : bool,
 
 
@@ -32,49 +24,52 @@ pub struct TemplateApp {
     show_window_1 : bool,
     some_window_open: bool,
 
-    // windows size as vec2 in pixels
-    pub window_size : Vec2,
-
-    // window position as pos2 in pixels
-    pub window_pos : Pos2,
-
 
     clipboard_manager: clipboard::ClipboardContext,
 
-    hotkey_item_inspection_pressed : bool,
-    hotkey_item_inspection_pressed_initial_position: Pos2,
-
 
     some_val : i32,
-    hotkey_item_inspection_pressed_first: bool,
 
     pub edit_mode_tab : Vec<bool>,
 
     item_info : String,
     current_clipboard: String,
-    hotkeys : Vec<Hotkey>,
 
+    pub some_option: u8,
+
+    item_inspection_settings: ItemInspectionSettings,
+    pub general_settings: GeneralSettings,
+}
+
+pub struct ItemInspectionSettings{
+    pub hotkey_item_inspection_pressed : bool, 
+    pub hotkey_item_inspection_pressed_initial_position: Pos2,
+    pub hotkey_item_inspection_pressed_first: bool,
+}
+
+pub struct GeneralSettings{
+    pub cursor_hittest: bool,
+    pub window_size: Vec2,
+    pub window_pos: Pos2, 
+    pub first_run : bool,
+    pub hotkeys: Vec<Hotkey>,
 }
 
 impl Default for TemplateApp {
     fn default() -> Self {
         Self {
-            cursor_hittest: false,
+            general_settings: GeneralSettings { cursor_hittest: false, 
+                window_size: Vec2 { x: 1919.0, y: 1079.0 }, window_pos: Pos2 { x: 0.0, y: 0.0 }, first_run: true, hotkeys: vec![] },
             edit_mode: false,
             show_window_1: false,
-            window_size: Vec2 { x: 1919.0, y: 1079.0 },
-            window_pos: Pos2 { x: 0.0, y: 0.0 },
             some_window_open : false,
             clipboard_manager : ClipboardProvider::new().unwrap(),
-            first_run : true,
-            hotkey_item_inspection_pressed : false,
+            item_inspection_settings: ItemInspectionSettings { hotkey_item_inspection_pressed: false, hotkey_item_inspection_pressed_initial_position: Pos2 { x: 0.0, y: 0.0 }, hotkey_item_inspection_pressed_first: true },
             some_val : 0,
-            hotkey_item_inspection_pressed_initial_position: Pos2 { x: 0.0, y: 0.0 },
-            hotkey_item_inspection_pressed_first: true,
             edit_mode_tab : vec![true, false, false],
             item_info : String::from("NoneItem"),
             current_clipboard: String::from("NoneCurrent"),
-            hotkeys : vec![],
+            some_option: 1,
         }
     }
 }
@@ -98,10 +93,10 @@ impl TemplateApp {
     // if true: our program is in control, used when hovering over buttons for example
     // if false: our window wont be able to receive any inputs
     fn toogle_cursor_hittest(&mut self){
-        if self.cursor_hittest{
-            self.cursor_hittest = false;
+        if self.general_settings.cursor_hittest{
+            self.general_settings.cursor_hittest = false;
         } else {
-            self.cursor_hittest = true;
+            self.general_settings.cursor_hittest = true;
         }
     }
 
@@ -116,9 +111,9 @@ impl TemplateApp {
     }
 
     fn update_window(&self, frame: &mut eframe::Frame, pixels_per_point:f32){
-        frame.set_window_pos(self.window_pos);
-        frame.set_window_size(Vec2{x: (self.window_size.x / pixels_per_point), y: (self.window_size.y/ pixels_per_point)});
-
+        frame.set_window_pos(self.general_settings.window_pos);
+        frame.set_window_size(Vec2{x: (self.general_settings.window_size.x / pixels_per_point),
+             y: (self.general_settings.window_size.y/ pixels_per_point)});
     }
 
     fn parse_clipboard(&mut self){
@@ -148,7 +143,7 @@ impl TemplateApp {
             self.item_info = later_clipboard;
             println!("later_clipboard {}", self.item_info);
             self.clipboard_manager.set_contents(self.current_clipboard.clone());
-    }
+        }
     }
 }
 
@@ -158,60 +153,58 @@ impl eframe::App for TemplateApp {
     }
 
     fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
-        let Self {
-            cursor_hittest, show_window_1, window_pos, window_size,
-            edit_mode, some_window_open, clipboard_manager, first_run,
-            hotkey_item_inspection_pressed, some_val, hotkey_item_inspection_pressed_initial_position,
-            hotkey_item_inspection_pressed_first, edit_mode_tab, item_info, current_clipboard,
-            hotkeys
+        let Self { show_window_1, general_settings, edit_mode,
+            some_window_open, clipboard_manager, some_val, 
+            edit_mode_tab, item_info, current_clipboard, 
+            some_option, item_inspection_settings
         } = self;
 
         // getting our cursor position to check if our cursor is hovering over a specific thing . windows only
         let temp_cursor: (i32, i32) = enigo::Enigo::mouse_location();
-        let cursor_location = Pos2{x: (temp_cursor.0 as f32 - window_pos.x), y: (temp_cursor.1 as f32 - window_pos.y)};
+        let cursor_location = Pos2{x: (temp_cursor.0 as f32 - self.general_settings.window_pos.x),
+             y: (temp_cursor.1 as f32 - self.general_settings.window_pos.y)};
 
         // this will set up the windo and fix dpi errors as well as setup hotkeys, 
         // idk how this runs some resolutions, only tested 1920x1080
         // can also be reset to reinitialize windows / hotkeys
-        if self.first_run{
+        if self.general_settings.first_run{
             let pixels_per_point = ctx.pixels_per_point();
             self.update_window(frame,pixels_per_point);
-            self.first_run = false;
+            self.general_settings.first_run = false;
             ctx.set_pixels_per_point(1.0);
             let hotkey_with_2_keys = Hotkey::new(vec![inputbot::KeybdKey::CapsLockKey, inputbot::KeybdKey::TabKey], "first_hotkey");
-            self.hotkeys.push(hotkey_with_2_keys);
+            self.general_settings.hotkeys.push(hotkey_with_2_keys);
             let hotkey_with_1_key = Hotkey::new(vec![inputbot::KeybdKey::LControlKey], "second_hotkey");
-            self.hotkeys.push(hotkey_with_1_key);
+            self.general_settings.hotkeys.push(hotkey_with_1_key);
         }
 
-        for hotkey in self.hotkeys.iter_mut(){
+        for hotkey in self.general_settings.hotkeys.iter_mut(){
             if hotkey.identifier == "first_hotkey"{
                 if hotkey.check(){
                     println!("CapsLock + Tab pressed!");
                 }
             } else if hotkey.identifier == "second_hotkey"{
                 let status = hotkey.check();
-                if status && self.hotkey_item_inspection_pressed == false {
-                    self.hotkey_item_inspection_pressed = true;
-                    self.hotkey_item_inspection_pressed_first = true;
-                } else if status && self.hotkey_item_inspection_pressed == true {
-                    self.hotkey_item_inspection_pressed = false;
+                if status && self.item_inspection_settings.hotkey_item_inspection_pressed == false {
+                    self.item_inspection_settings.hotkey_item_inspection_pressed = true;
+                    self.item_inspection_settings.hotkey_item_inspection_pressed_first = true;
+                } else if status && self.item_inspection_settings.hotkey_item_inspection_pressed == true {
+                    self.item_inspection_settings.hotkey_item_inspection_pressed = false;
                 } 
             }
         }
-
         // if true: our window has control of input (as normal), 
         // if false: our window lets any input trough to the next window
-        if self.cursor_hittest == true{
+        if self.general_settings.cursor_hittest == true{
             frame.set_cursor_hittest(true);
         } else {
             frame.set_cursor_hittest(false);
         }
-        
+
         // the main panel that covers almost the full screen
         if self.edit_mode{
             let mut main_window = MainWindow{cursor_location, app: self, ctx, frame};
-            main_window.run_edit()
+           main_window.run_edit()
         } else {
             let mut main_window = MainWindow{cursor_location, app: self, ctx, frame};
             main_window.run_background()
@@ -236,32 +229,8 @@ impl eframe::App for TemplateApp {
             });
         }
 
-        if self.hotkey_item_inspection_pressed{
-            self.hotkey_item_inspection_pressed_initial_position = if self.hotkey_item_inspection_pressed_first { cursor_location } else { self.hotkey_item_inspection_pressed_initial_position };
-            egui::Window::new("Item Inspection")
-            .current_pos(self.hotkey_item_inspection_pressed_initial_position)
-            .resizable(true)
-            .frame(egui::Frame{
-                fill: egui::Color32::from_rgba_premultiplied(180, 180, 180, 180),
-                ..egui::Frame::default()
-            })
-            .collapsible(false)
-            .show(ctx, |ui| {
-                ui.visuals_mut().override_text_color = Some(egui::Color32::BLACK);
-                self.some_val += 1;
-                let temp = self.some_val.to_string();
-                ui.label(temp);
-                let inspection_window_close_button = ui.add(egui::Button::new("Close").fill(egui::Color32::WHITE));
-                if inspection_window_close_button.rect.contains(cursor_location) {
-                    self.cursor_hittest = true;
-                    if inspection_window_close_button.clicked(){
-                        self.hotkey_item_inspection_pressed = false;
-
-                    }
-
-                }
-            });
-            self.hotkey_item_inspection_pressed_first = false;
+        if self.item_inspection_settings.hotkey_item_inspection_pressed{
+            show_item_inspection_window(ctx, frame, cursor_location, self)
         }
 
         // update our window all the time with a small sleep value to reduce CPU usage 
@@ -286,11 +255,51 @@ fn show_bottom_panel(
         egui::menu::bar(ui, |ui| {
            let quit_button = ui.add_sized(Vec2{x:100.0, y:50.0},egui::Button::new("Quit").fill(egui::Color32::WHITE));
         if quit_button.rect.contains(cursor_location){
-            app.cursor_hittest = true;
+            app.general_settings.cursor_hittest = true;
             if quit_button.clicked() {
                     frame.quit();
             };
         }
         });
    });
+}
+
+
+
+fn show_item_inspection_window(
+    ctx: &egui::Context,
+    frame: &mut eframe::Frame,
+    cursor_location: Pos2,
+    app: &mut TemplateApp,
+){
+    app.item_inspection_settings.hotkey_item_inspection_pressed_initial_position = 
+        if app.item_inspection_settings.hotkey_item_inspection_pressed_first { cursor_location } 
+        else { app.item_inspection_settings.hotkey_item_inspection_pressed_initial_position };
+    egui::Window::new("Item Inspection")
+    .current_pos(app.item_inspection_settings.hotkey_item_inspection_pressed_initial_position)
+    .resizable(false)
+    .frame(egui::Frame{
+        fill: egui::Color32::from_rgba_premultiplied(180, 180, 180, 180),
+        ..egui::Frame::default()
+    })
+    .collapsible(false)
+    .show(ctx, |ui| {
+        ui.visuals_mut().override_text_color = Some(egui::Color32::BLACK);
+        app.some_val += 1;
+        let temp = app.some_val.to_string();
+        ui.label(temp);
+        let inspection_window_close_button = ui.add(egui::Button::new("Close").fill(egui::Color32::WHITE));
+        if inspection_window_close_button.rect.contains(cursor_location) {
+            app.general_settings.cursor_hittest = true;
+            if inspection_window_close_button.clicked(){
+                app.item_inspection_settings.hotkey_item_inspection_pressed = false;
+
+            }
+
+        }
+    });
+    app.item_inspection_settings.hotkey_item_inspection_pressed_first = false;
+
+
+
 }

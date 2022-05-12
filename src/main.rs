@@ -10,8 +10,8 @@ mod hotkeymanager;
 
 fn main() {
     let native_options = eframe::NativeOptions{
-        initial_window_pos: Some(TemplateApp::default().window_pos),
-        initial_window_size : Some(TemplateApp::default().window_size),
+        initial_window_pos: Some(TemplateApp::default().general_settings.window_pos),
+        initial_window_size : Some(TemplateApp::default().general_settings.window_size),
         resizable:true,
         decorated: false,
         transparent: true,
