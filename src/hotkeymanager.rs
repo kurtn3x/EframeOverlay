@@ -1,12 +1,37 @@
 use std::ops::IndexMut;
+use std::fmt;
+use inputbot::KeybdKey;
+use strum::IntoEnumIterator;
 
+use crate::app::TemplateApp; // 0.17.1
 
+#[derive(Clone)]
 pub struct Hotkey{
     key_state : Vec<i16>,
     activated : Vec<bool>,
     key: Vec<inputbot::KeybdKey>,
     pub identifier: &'static str,
     block: bool,
+}
+
+
+impl Default for Hotkey {
+    fn default() -> Hotkey {
+        Hotkey {
+            key_state : vec![],
+            activated : vec![],
+            key: vec![],
+            identifier: "Init",
+            block: false,
+        }
+    }
+}
+
+impl fmt::Display for Hotkey {
+    // This trait requires `fmt` with this exact signature.
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:?}", self.key)
+    }
 }
 
 impl Hotkey{
@@ -85,5 +110,37 @@ impl Hotkey{
             return false;
         }
 
+    }
+}
+
+
+/// capture any key and return it if pressed
+pub fn capture_key() -> KeybdKey{
+    'outer: loop{
+        'inner: for key in inputbot::KeybdKey::iter(){
+            if key.is_pressed(){
+                return key;
+            }
+        }
+    }
+}
+
+
+/// all the hotkeys and what they are supposed to do
+pub fn check_hotkeys(app : &mut TemplateApp) {
+    for hotkey in app.my_hotkeys.all_hotkeys.iter_mut(){
+        if hotkey.identifier == "first_hotkey"{
+            if hotkey.check(){
+                println!("CapsLock + Tab pressed!");
+            }
+        } else if hotkey.identifier == "hotkey_item_inspection"{
+            let status = hotkey.check();
+            if status && app.item_inspection_settings.hotkey_item_inspection_pressed == false {
+                app.item_inspection_settings.hotkey_item_inspection_pressed = true;
+                app.item_inspection_settings.hotkey_item_inspection_pressed_first = true;
+            } else if status && app.item_inspection_settings.hotkey_item_inspection_pressed == true {
+                app.item_inspection_settings.hotkey_item_inspection_pressed = false;
+            } 
+        }
     }
 }

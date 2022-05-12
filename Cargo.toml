@@ -16,7 +16,9 @@ inputbot = { path = "inputbot"}
 clipboard = "0.5.0"
 mki_fork = "0.2.1"
 winput = "0.2.5"
-
+pistoncore-input = "1.0.1"
+strum = "0.24"
+strum_macros = "0.24"
 
 [replace]
 "winit:0.26.1" = { path = "winit" }

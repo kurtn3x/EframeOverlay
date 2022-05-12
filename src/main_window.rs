@@ -1,6 +1,12 @@
 use crate::TemplateApp;
 use eframe::Frame;
 use egui::{Pos2, Vec2, Widget, RichText, Context};
+extern crate mki_fork;
+use mki_fork::*;
+use strum::IntoEnumIterator; // 0.17.1
+use strum_macros::EnumIter; // 0.17.1
+use crate::hotkeymanager::capture_key;
+
 pub struct MainWindow <'a>{
     pub cursor_location:  Pos2,
     pub app: &'a mut TemplateApp,
@@ -103,14 +109,46 @@ impl MainWindow <'_>{
             ui.add_space(20.0);
             ui.horizontal(|ui| {
                 ui.add_space(20.0);
-                ui.heading("THIS IS TAB0");
-                egui::ComboBox::from_label("Select one!")
-                .selected_text(format!("{:?}", self.app.some_option))
-                .show_ui(ui, |ui| {
-                    ui.selectable_value(&mut self.app.some_option, 1, "1");
-                    ui.selectable_value(&mut self.app.some_option, 2, "2");
-                    ui.selectable_value(&mut self.app.some_option, 3, "3");
-                });
+                ui.heading("ITEM INSPECTION HOTKEY");
+                if ui.add_sized([40.0, 20.0], egui::Button::new("Capture Hotkey....")).clicked(){
+                    self.app.my_hotkeys.capture_key = true;
+                }
+
+                if self.app.my_hotkeys.capture_key{
+                    let key = capture_key();
+                    println!("{:?}", key);
+                    self.app.my_hotkeys.capture_key = false;
+                }
+
+                let str = format!("{}", self.app.my_hotkeys.hotkey_item_inspection);
+                ui.label(egui::RichText::new(str));
+            });
+        ui.add(egui::widgets::Separator::default());
+        egui::Grid::new("some_unique_id")
+        .striped(true)
+        .show(ui, |ui| {
+                ui.label("Description1");
+                ui.label("KeybindsInfo1");
+                if ui.add_sized([40.0, 20.0], egui::Button::new("Capture Hotkey....")).clicked(){
+                    self.app.my_hotkeys.capture_key = true;
+                };
+                ui.label("Keybind2");
+                ui.label("Keybind3");
+                ui.end_row();
+            
+                ui.label("Description2");
+                ui.label("KeybindsInfo2");
+                ui.label("Keybind1");
+                ui.label("Keybind2");
+                ui.label("Keybind3");
+                ui.end_row();
+            
+                ui.label("Description3");
+                ui.label("KeybindsInfo3");
+                ui.label("Keybind1");
+                ui.label("Keybind2");
+                ui.label("Keybind3");
+                ui.end_row();
             });
         });
 

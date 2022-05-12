@@ -13,32 +13,24 @@ use inputbot;
 extern crate clipboard;
 use clipboard::ClipboardProvider;
 use crate::main_window::MainWindow;
-use crate::hotkeymanager::Hotkey;
+use crate::hotkeymanager::{Hotkey, check_hotkeys};
 use std::rc::Rc;
+extern crate input;
 
 pub struct TemplateApp {
     pub edit_mode : bool,
-
-
     // subwindow handling
     show_window_1 : bool,
     some_window_open: bool,
-
-
     clipboard_manager: clipboard::ClipboardContext,
-
-
     some_val : i32,
-
     pub edit_mode_tab : Vec<bool>,
-
     item_info : String,
     current_clipboard: String,
-
     pub some_option: u8,
-
-    item_inspection_settings: ItemInspectionSettings,
+    pub item_inspection_settings: ItemInspectionSettings,
     pub general_settings: GeneralSettings,
+    pub my_hotkeys: MyHotkeys,
 }
 
 pub struct ItemInspectionSettings{
@@ -47,24 +39,32 @@ pub struct ItemInspectionSettings{
     pub hotkey_item_inspection_pressed_first: bool,
 }
 
+pub struct MyHotkeys{
+    pub capture_key : bool,
+    pub reinizialize_hotkeys : bool,
+    pub all_hotkeys: Vec<Hotkey>,
+    pub hotkey_item_inspection: Hotkey,
+
+}
+
 pub struct GeneralSettings{
     pub cursor_hittest: bool,
     pub window_size: Vec2,
     pub window_pos: Pos2, 
     pub first_run : bool,
-    pub hotkeys: Vec<Hotkey>,
 }
 
 impl Default for TemplateApp {
     fn default() -> Self {
         Self {
-            general_settings: GeneralSettings { cursor_hittest: false, 
-                window_size: Vec2 { x: 1919.0, y: 1079.0 }, window_pos: Pos2 { x: 0.0, y: 0.0 }, first_run: true, hotkeys: vec![] },
+            my_hotkeys : MyHotkeys{reinizialize_hotkeys: true, capture_key: false, hotkey_item_inspection: Hotkey::new(vec![inputbot::KeybdKey::LControlKey], "hotkey_item_inspection"), all_hotkeys: vec![] },
+            general_settings: GeneralSettings { cursor_hittest: false, window_size: Vec2 { x: 1919.0, y: 1032.0 }, window_pos: Pos2 { x: 0.0, y: 0.0 }, first_run: true },
+            item_inspection_settings: ItemInspectionSettings { hotkey_item_inspection_pressed: false, hotkey_item_inspection_pressed_initial_position: Pos2 { x: 0.0, y: 0.0 },
+                hotkey_item_inspection_pressed_first: true},
             edit_mode: false,
             show_window_1: false,
             some_window_open : false,
             clipboard_manager : ClipboardProvider::new().unwrap(),
-            item_inspection_settings: ItemInspectionSettings { hotkey_item_inspection_pressed: false, hotkey_item_inspection_pressed_initial_position: Pos2 { x: 0.0, y: 0.0 }, hotkey_item_inspection_pressed_first: true },
             some_val : 0,
             edit_mode_tab : vec![true, false, false],
             item_info : String::from("NoneItem"),
@@ -78,7 +78,6 @@ impl TemplateApp {
     /// Called once before the first frame.
     pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
         Default::default()
-
     }
 
     // just decides if the subwindow created is shown or hidden
@@ -156,7 +155,7 @@ impl eframe::App for TemplateApp {
         let Self { show_window_1, general_settings, edit_mode,
             some_window_open, clipboard_manager, some_val, 
             edit_mode_tab, item_info, current_clipboard, 
-            some_option, item_inspection_settings
+            some_option, item_inspection_settings, my_hotkeys
         } = self;
 
         // getting our cursor position to check if our cursor is hovering over a specific thing . windows only
@@ -172,27 +171,21 @@ impl eframe::App for TemplateApp {
             self.update_window(frame,pixels_per_point);
             self.general_settings.first_run = false;
             ctx.set_pixels_per_point(1.0);
-            let hotkey_with_2_keys = Hotkey::new(vec![inputbot::KeybdKey::CapsLockKey, inputbot::KeybdKey::TabKey], "first_hotkey");
-            self.general_settings.hotkeys.push(hotkey_with_2_keys);
-            let hotkey_with_1_key = Hotkey::new(vec![inputbot::KeybdKey::LControlKey], "second_hotkey");
-            self.general_settings.hotkeys.push(hotkey_with_1_key);
+            // let hotkey_with_2_keys = Hotkey::new(vec![inputbot::KeybdKey::CapsLockKey, inputbot::KeybdKey::TabKey], "first_hotkey");
+            // self.general_settings.hotkeys.push(hotkey_with_2_keys);
+            // let hotkey_with_1_key = Hotkey::new(vec![inputbot::KeybdKey::LControlKey], "second_hotkey");
+            // self.general_settings.hotkeys.push(hotkey_with_1_key);
         }
 
-        for hotkey in self.general_settings.hotkeys.iter_mut(){
-            if hotkey.identifier == "first_hotkey"{
-                if hotkey.check(){
-                    println!("CapsLock + Tab pressed!");
-                }
-            } else if hotkey.identifier == "second_hotkey"{
-                let status = hotkey.check();
-                if status && self.item_inspection_settings.hotkey_item_inspection_pressed == false {
-                    self.item_inspection_settings.hotkey_item_inspection_pressed = true;
-                    self.item_inspection_settings.hotkey_item_inspection_pressed_first = true;
-                } else if status && self.item_inspection_settings.hotkey_item_inspection_pressed == true {
-                    self.item_inspection_settings.hotkey_item_inspection_pressed = false;
-                } 
-            }
+        if self.my_hotkeys.reinizialize_hotkeys{
+            self.my_hotkeys.all_hotkeys = vec![];
+            self.my_hotkeys.all_hotkeys.push(self.my_hotkeys.hotkey_item_inspection.clone());
+            self.my_hotkeys.reinizialize_hotkeys = false;
         }
+
+        check_hotkeys(self);
+
+
         // if true: our window has control of input (as normal), 
         // if false: our window lets any input trough to the next window
         if self.general_settings.cursor_hittest == true{
@@ -250,7 +243,7 @@ fn show_bottom_panel(
        fill: egui::Color32::TRANSPARENT,
        ..egui::Frame::default()
     })
-    .min_height(100.0)
+    // .min_height(100.0)
     .show(ctx, |ui| {
         egui::menu::bar(ui, |ui| {
            let quit_button = ui.add_sized(Vec2{x:100.0, y:50.0},egui::Button::new("Quit").fill(egui::Color32::WHITE));
@@ -299,7 +292,4 @@ fn show_item_inspection_window(
         }
     });
     app.item_inspection_settings.hotkey_item_inspection_pressed_first = false;
-
-
-
 }
