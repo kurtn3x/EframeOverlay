@@ -17,7 +17,7 @@ use crate::hotkeymanager::{Hotkey, check_hotkeys};
 use std::rc::Rc;
 extern crate input;
 
-pub struct TemplateApp {
+pub struct TemplateApp <'a> {
     pub edit_mode : bool,
     // subwindow handling
     show_window_1 : bool,
@@ -30,7 +30,7 @@ pub struct TemplateApp {
     pub some_option: u8,
     pub item_inspection_settings: ItemInspectionSettings,
     pub general_settings: GeneralSettings,
-    pub my_hotkeys: MyHotkeys,
+    pub my_hotkeys: MyHotkeys<'a>,
 }
 
 pub struct ItemInspectionSettings{
@@ -39,11 +39,11 @@ pub struct ItemInspectionSettings{
     pub hotkey_item_inspection_pressed_first: bool,
 }
 
-pub struct MyHotkeys{
+pub struct MyHotkeys <'a>{
     pub capture_key : bool,
     pub reinizialize_hotkeys : bool,
-    pub all_hotkeys: Vec<Hotkey>,
-    pub hotkey_item_inspection: Hotkey,
+    pub all_hotkeys: Vec<Hotkey<'a>>,
+    pub hotkey_item_inspection: Hotkey<'a>,
 
 }
 
@@ -54,10 +54,10 @@ pub struct GeneralSettings{
     pub first_run : bool,
 }
 
-impl Default for TemplateApp {
+impl Default for TemplateApp <'_>{
     fn default() -> Self {
         Self {
-            my_hotkeys : MyHotkeys{reinizialize_hotkeys: true, capture_key: false, hotkey_item_inspection: Hotkey::new(vec![inputbot::KeybdKey::LControlKey], "hotkey_item_inspection"), all_hotkeys: vec![] },
+            my_hotkeys : MyHotkeys{reinizialize_hotkeys: true, capture_key: false, all_hotkeys: vec![], hotkey_item_inspection: Hotkey::new(vec![], "hotkey_item_inspection") },
             general_settings: GeneralSettings { cursor_hittest: false, window_size: Vec2 { x: 1919.0, y: 1032.0 }, window_pos: Pos2 { x: 0.0, y: 0.0 }, first_run: true },
             item_inspection_settings: ItemInspectionSettings { hotkey_item_inspection_pressed: false, hotkey_item_inspection_pressed_initial_position: Pos2 { x: 0.0, y: 0.0 },
                 hotkey_item_inspection_pressed_first: true},
@@ -74,7 +74,7 @@ impl Default for TemplateApp {
     }
 }
 
-impl TemplateApp {
+impl TemplateApp <'_>{
     /// Called once before the first frame.
     pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
         Default::default()
@@ -146,7 +146,7 @@ impl TemplateApp {
     }
 }
 
-impl eframe::App for TemplateApp {
+impl eframe::App for TemplateApp <'_>{
     fn clear_color(&self, _visuals: &egui::Visuals) -> egui::Rgba {
         egui::Rgba::TRANSPARENT
     }
@@ -171,17 +171,20 @@ impl eframe::App for TemplateApp {
             self.update_window(frame,pixels_per_point);
             self.general_settings.first_run = false;
             ctx.set_pixels_per_point(1.0);
+            // self.my_hotkeys.all_hotkeys.push(self.my_hotkeys.hotkey_item_inspection);
+
+
             // let hotkey_with_2_keys = Hotkey::new(vec![inputbot::KeybdKey::CapsLockKey, inputbot::KeybdKey::TabKey], "first_hotkey");
             // self.general_settings.hotkeys.push(hotkey_with_2_keys);
             // let hotkey_with_1_key = Hotkey::new(vec![inputbot::KeybdKey::LControlKey], "second_hotkey");
             // self.general_settings.hotkeys.push(hotkey_with_1_key);
         }
 
-        if self.my_hotkeys.reinizialize_hotkeys{
-            self.my_hotkeys.all_hotkeys = vec![];
-            self.my_hotkeys.all_hotkeys.push(self.my_hotkeys.hotkey_item_inspection.clone());
-            self.my_hotkeys.reinizialize_hotkeys = false;
-        }
+        // if self.my_hotkeys.reinizialize_hotkeys{
+        //     self.my_hotkeys.hotkey_item_inspection = Hotkey::new(vec![inputbot::KeybdKey::LControlKey], "hotkey_item_inspection");
+        //     self.my_hotkeys.all_hotkeys.push(self.my_hotkeys.hotkey_item_inspection.clone());
+        //     self.my_hotkeys.reinizialize_hotkeys = false;
+        // }
 
         check_hotkeys(self);
 

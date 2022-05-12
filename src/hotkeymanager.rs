@@ -6,17 +6,17 @@ use strum::IntoEnumIterator;
 use crate::app::TemplateApp; // 0.17.1
 
 #[derive(Clone)]
-pub struct Hotkey{
+pub struct Hotkey<'a>{
     key_state : Vec<i16>,
     activated : Vec<bool>,
-    key: Vec<inputbot::KeybdKey>,
-    pub identifier: &'static str,
+    pub key: Vec<inputbot::KeybdKey>,
+    pub identifier: &'a str,
     block: bool,
 }
 
 
-impl Default for Hotkey {
-    fn default() -> Hotkey {
+impl Default for Hotkey <'_>{
+    fn default() -> Hotkey <'static>{
         Hotkey {
             key_state : vec![],
             activated : vec![],
@@ -27,14 +27,14 @@ impl Default for Hotkey {
     }
 }
 
-impl fmt::Display for Hotkey {
+impl fmt::Display for Hotkey <'_>{
     // This trait requires `fmt` with this exact signature.
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{:?}", self.key)
     }
 }
 
-impl Hotkey{
+impl Hotkey <'_>{
     /// create a new shortcut available for checking
     /// the identifier is needed to identify the hotkey later
     /// this result should be pushed to a 'Vec<Hotkey>', in your main 

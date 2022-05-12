@@ -7,14 +7,14 @@ use strum::IntoEnumIterator; // 0.17.1
 use strum_macros::EnumIter; // 0.17.1
 use crate::hotkeymanager::capture_key;
 
-pub struct MainWindow <'a>{
+pub struct MainWindow <'a, 'b>{
     pub cursor_location:  Pos2,
-    pub app: &'a mut TemplateApp,
+    pub app: &'a mut TemplateApp <'b>,
     pub ctx: &'a  egui::Context,
     pub frame: &'a mut eframe::Frame,
 }
 
-impl MainWindow <'_>{
+impl <'b> MainWindow <'_, 'b>{
 
     pub fn run_edit(&mut self){
         egui::CentralPanel::default()
@@ -128,12 +128,24 @@ impl MainWindow <'_>{
         .striped(true)
         .show(ui, |ui| {
                 ui.label("Description1");
-                ui.label("KeybindsInfo1");
-                if ui.add_sized([40.0, 20.0], egui::Button::new("Capture Hotkey....")).clicked(){
-                    self.app.my_hotkeys.capture_key = true;
+                let str = format!("{}", self.app.my_hotkeys.hotkey_item_inspection);
+                ui.label(str);
+                if ui.add_sized([40.0, 20.0], egui::Button::new("Capture Key1")).clicked(){
+                    let key = capture_key();
+                    if self.app.my_hotkeys.hotkey_item_inspection.key.len() == 0{
+                        self.app.my_hotkeys.hotkey_item_inspection.key.push(key);
+                    } else {
+                        self.app.my_hotkeys.hotkey_item_inspection.key[0] =  key;
+                    }
                 };
-                ui.label("Keybind2");
-                ui.label("Keybind3");
+                if ui.add_sized([40.0, 20.0], egui::Button::new("Capture Key2")).clicked(){
+                    let key = capture_key();
+                    self.app.my_hotkeys.hotkey_item_inspection.key[1] =  key;
+                };
+                if ui.add_sized([40.0, 20.0], egui::Button::new("Capture Key3")).clicked(){
+                    let key = capture_key();
+                    self.app.my_hotkeys.hotkey_item_inspection.key[2] =  key;
+                };
                 ui.end_row();
             
                 ui.label("Description2");
