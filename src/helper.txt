@@ -4,6 +4,10 @@ let open_butt = ui.add_sized(Vec2{x: 100.0, y: 50.0},egui::Button::new(RichText:
 https://docs.rs/winput/latest/winput/enum.Vk.html
 
 
+enum for tabs
+in central panel match self.enumwithtabs {
+    Tab0 => dosmth
+    etc => etc
+}
 
-check both keys as soon as both change state to active -> block input, return true
-as soon one key changes back to inactive -> unblock input, return false
+

@@ -12,26 +12,13 @@ use std::fs::File;
 use inputbot;
 extern crate clipboard;
 use clipboard::ClipboardProvider;
-use crate::main_window::MainWindow;
-use crate::hotkeymanager::{Hotkey, check_hotkeys};
 use std::rc::Rc;
 extern crate input;
-
-pub struct TemplateApp <'a> {
-    pub edit_mode : bool,
-    // subwindow handling
-    show_window_1 : bool,
-    some_window_open: bool,
-    clipboard_manager: clipboard::ClipboardContext,
-    some_val : i32,
-    pub edit_mode_tab : Vec<bool>,
-    item_info : String,
-    current_clipboard: String,
-    pub some_option: u8,
-    pub item_inspection_settings: ItemInspectionSettings,
-    pub general_settings: GeneralSettings,
-    pub my_hotkeys: MyHotkeys<'a>,
-}
+use super::AppComponent;
+use super::background_mode::BackgroundMode;
+use super::hotkeymanager::Hotkey;
+use super::super::App;
+use super::edit_mode::EditMode;
 
 pub struct ItemInspectionSettings{
     pub hotkey_item_inspection_pressed : bool, 
@@ -52,13 +39,14 @@ pub struct GeneralSettings{
     pub window_size: Vec2,
     pub window_pos: Pos2, 
     pub first_run : bool,
+    pub cursor_location: Pos2,
 }
 
-impl Default for TemplateApp <'_>{
+impl Default for App {
     fn default() -> Self {
         Self {
-            my_hotkeys : MyHotkeys{reinizialize_hotkeys: true, capture_key: false, all_hotkeys: vec![], hotkey_item_inspection: Hotkey::new(vec![], "hotkey_item_inspection") },
-            general_settings: GeneralSettings { cursor_hittest: false, window_size: Vec2 { x: 1919.0, y: 1032.0 }, window_pos: Pos2 { x: 0.0, y: 0.0 }, first_run: true },
+            // my_hotkeys : MyHotkeys{reinizialize_hotkeys: true, capture_key: false, all_hotkeys: vec![], hotkey_item_inspection: Hotkey::new(vec![], "hotkey_item_inspection") },
+            general_settings: GeneralSettings { cursor_hittest: false, window_size: Vec2 { x: 1919.0, y: 1032.0 }, window_pos: Pos2 { x: 0.0, y: 0.0 }, first_run: true, cursor_location: Pos2 { x: 0.0, y: 0.0 } },
             item_inspection_settings: ItemInspectionSettings { hotkey_item_inspection_pressed: false, hotkey_item_inspection_pressed_initial_position: Pos2 { x: 0.0, y: 0.0 },
                 hotkey_item_inspection_pressed_first: true},
             edit_mode: false,
@@ -74,7 +62,7 @@ impl Default for TemplateApp <'_>{
     }
 }
 
-impl TemplateApp <'_>{
+impl App {
     /// Called once before the first frame.
     pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
         Default::default()
@@ -146,7 +134,7 @@ impl TemplateApp <'_>{
     }
 }
 
-impl eframe::App for TemplateApp <'_>{
+impl eframe::App for App{
     fn clear_color(&self, _visuals: &egui::Visuals) -> egui::Rgba {
         egui::Rgba::TRANSPARENT
     }
@@ -155,12 +143,13 @@ impl eframe::App for TemplateApp <'_>{
         let Self { show_window_1, general_settings, edit_mode,
             some_window_open, clipboard_manager, some_val, 
             edit_mode_tab, item_info, current_clipboard, 
-            some_option, item_inspection_settings, my_hotkeys
+            some_option, item_inspection_settings
         } = self;
+
 
         // getting our cursor position to check if our cursor is hovering over a specific thing . windows only
         let temp_cursor: (i32, i32) = enigo::Enigo::mouse_location();
-        let cursor_location = Pos2{x: (temp_cursor.0 as f32 - self.general_settings.window_pos.x),
+        self.general_settings.cursor_location = Pos2{x: (temp_cursor.0 as f32 - self.general_settings.window_pos.x),
              y: (temp_cursor.1 as f32 - self.general_settings.window_pos.y)};
 
         // this will set up the windo and fix dpi errors as well as setup hotkeys, 
@@ -186,7 +175,7 @@ impl eframe::App for TemplateApp <'_>{
         //     self.my_hotkeys.reinizialize_hotkeys = false;
         // }
 
-        check_hotkeys(self);
+        // check_hotkeys(self);
 
 
         // if true: our window has control of input (as normal), 
@@ -198,16 +187,15 @@ impl eframe::App for TemplateApp <'_>{
         }
 
         // the main panel that covers almost the full screen
+
         if self.edit_mode{
-            let mut main_window = MainWindow{cursor_location, app: self, ctx, frame};
-           main_window.run_edit()
+            EditMode::add(ctx, frame, self);
         } else {
-            let mut main_window = MainWindow{cursor_location, app: self, ctx, frame};
-            main_window.run_background()
+            BackgroundMode::add(ctx, frame, self);
         }
         
         // bottom panel
-        show_bottom_panel(ctx, frame,cursor_location, self);
+        show_bottom_panel(ctx, frame, self.general_settings.cursor_location, self);
 
         if self.show_window_1{
             egui::Window::new("Some Window")
@@ -226,7 +214,7 @@ impl eframe::App for TemplateApp <'_>{
         }
 
         if self.item_inspection_settings.hotkey_item_inspection_pressed{
-            show_item_inspection_window(ctx, frame, cursor_location, self)
+            show_item_inspection_window(ctx, frame, self.general_settings.cursor_location, self)
         }
 
         // update our window all the time with a small sleep value to reduce CPU usage 
@@ -239,7 +227,7 @@ fn show_bottom_panel(
     ctx: &egui::Context,
     frame: &mut eframe::Frame,
     cursor_location: Pos2,
-    app: &mut TemplateApp,
+    app: &mut App,
 ) {
     egui::TopBottomPanel::bottom("bottom_panel")
     .frame(egui::Frame{
@@ -266,7 +254,7 @@ fn show_item_inspection_window(
     ctx: &egui::Context,
     frame: &mut eframe::Frame,
     cursor_location: Pos2,
-    app: &mut TemplateApp,
+    app: &mut App,
 ){
     app.item_inspection_settings.hotkey_item_inspection_pressed_initial_position = 
         if app.item_inspection_settings.hotkey_item_inspection_pressed_first { cursor_location } 

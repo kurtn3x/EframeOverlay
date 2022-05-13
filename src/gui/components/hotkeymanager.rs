@@ -2,8 +2,7 @@ use std::ops::IndexMut;
 use std::fmt;
 use inputbot::KeybdKey;
 use strum::IntoEnumIterator;
-
-use crate::app::TemplateApp; // 0.17.1
+use super::super::App;
 
 #[derive(Clone)]
 pub struct Hotkey<'a>{
@@ -126,21 +125,21 @@ pub fn capture_key() -> KeybdKey{
 }
 
 
-/// all the hotkeys and what they are supposed to do
-pub fn check_hotkeys(app : &mut TemplateApp) {
-    for hotkey in app.my_hotkeys.all_hotkeys.iter_mut(){
-        if hotkey.identifier == "first_hotkey"{
-            if hotkey.check(){
-                println!("CapsLock + Tab pressed!");
-            }
-        } else if hotkey.identifier == "hotkey_item_inspection"{
-            let status = hotkey.check();
-            if status && app.item_inspection_settings.hotkey_item_inspection_pressed == false {
-                app.item_inspection_settings.hotkey_item_inspection_pressed = true;
-                app.item_inspection_settings.hotkey_item_inspection_pressed_first = true;
-            } else if status && app.item_inspection_settings.hotkey_item_inspection_pressed == true {
-                app.item_inspection_settings.hotkey_item_inspection_pressed = false;
-            } 
-        }
-    }
-}
+// all the hotkeys and what they are supposed to do
+// pub fn check_hotkeys(app : &mut App) {
+//     for hotkey in app.my_hotkeys.all_hotkeys.iter_mut(){
+//         if hotkey.identifier == "first_hotkey"{
+//             if hotkey.check(){
+//                 println!("CapsLock + Tab pressed!");
+//             }
+//         } else if hotkey.identifier == "hotkey_item_inspection"{
+//             let status = hotkey.check();
+//             if status && app.item_inspection_settings.hotkey_item_inspection_pressed == false {
+//                 app.item_inspection_settings.hotkey_item_inspection_pressed = true;
+//                 app.item_inspection_settings.hotkey_item_inspection_pressed_first = true;
+//             } else if status && app.item_inspection_settings.hotkey_item_inspection_pressed == true {
+//                 app.item_inspection_settings.hotkey_item_inspection_pressed = false;
+//             } 
+//         }
+//     }
+// }
