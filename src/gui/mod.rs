@@ -16,5 +16,5 @@ pub struct App {
     pub some_option: u8,
     pub item_inspection_settings: ItemInspectionSettings,
     pub general_settings: GeneralSettings,
-    // pub my_hotkeys: MyHotkeys<'a>,
+    pub my_hotkeys: MyHotkeys,
 }

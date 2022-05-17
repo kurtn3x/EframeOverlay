@@ -9,14 +9,14 @@ extern crate rev_lines;
 use rev_lines::RevLines;
 use std::io::BufReader;
 use std::fs::File;
-use inputbot;
+use inputbot::{self, KeybdKey};
 extern crate clipboard;
 use clipboard::ClipboardProvider;
 use std::rc::Rc;
 extern crate input;
 use super::AppComponent;
 use super::background_mode::BackgroundMode;
-use super::hotkeymanager::Hotkey;
+use super::hotkeymanager::{Hotkey, check_hotkeys};
 use super::super::App;
 use super::edit_mode::EditMode;
 
@@ -26,11 +26,11 @@ pub struct ItemInspectionSettings{
     pub hotkey_item_inspection_pressed_first: bool,
 }
 
-pub struct MyHotkeys <'a>{
+pub struct MyHotkeys{
     pub capture_key : bool,
     pub reinizialize_hotkeys : bool,
-    pub all_hotkeys: Vec<Hotkey<'a>>,
-    pub hotkey_item_inspection: Hotkey<'a>,
+    pub all_hotkeys: Vec<Hotkey<'static>>,
+    pub hotkey_item_inspection: Vec<KeybdKey>,
 
 }
 
@@ -45,7 +45,7 @@ pub struct GeneralSettings{
 impl Default for App {
     fn default() -> Self {
         Self {
-            // my_hotkeys : MyHotkeys{reinizialize_hotkeys: true, capture_key: false, all_hotkeys: vec![], hotkey_item_inspection: Hotkey::new(vec![], "hotkey_item_inspection") },
+            my_hotkeys : MyHotkeys{reinizialize_hotkeys: true, capture_key: false, all_hotkeys: vec![], hotkey_item_inspection: vec![]},
             general_settings: GeneralSettings { cursor_hittest: false, window_size: Vec2 { x: 1919.0, y: 1032.0 }, window_pos: Pos2 { x: 0.0, y: 0.0 }, first_run: true, cursor_location: Pos2 { x: 0.0, y: 0.0 } },
             item_inspection_settings: ItemInspectionSettings { hotkey_item_inspection_pressed: false, hotkey_item_inspection_pressed_initial_position: Pos2 { x: 0.0, y: 0.0 },
                 hotkey_item_inspection_pressed_first: true},
@@ -139,11 +139,11 @@ impl eframe::App for App{
         egui::Rgba::TRANSPARENT
     }
 
-    fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
+    fn update  (&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
         let Self { show_window_1, general_settings, edit_mode,
             some_window_open, clipboard_manager, some_val, 
             edit_mode_tab, item_info, current_clipboard, 
-            some_option, item_inspection_settings
+            some_option, item_inspection_settings, my_hotkeys
         } = self;
 
 
@@ -164,18 +164,22 @@ impl eframe::App for App{
 
 
             // let hotkey_with_2_keys = Hotkey::new(vec![inputbot::KeybdKey::CapsLockKey, inputbot::KeybdKey::TabKey], "first_hotkey");
-            // self.general_settings.hotkeys.push(hotkey_with_2_keys);
-            // let hotkey_with_1_key = Hotkey::new(vec![inputbot::KeybdKey::LControlKey], "second_hotkey");
-            // self.general_settings.hotkeys.push(hotkey_with_1_key);
+            // self.my_hotkeys.all_hotkeys.push(hotkey_with_2_keys);
+            let hotkey_with_1_key = Hotkey::new(vec![inputbot::KeybdKey::LControlKey], "hotkey_item_inspection");
+            self.my_hotkeys.all_hotkeys.push(hotkey_with_1_key);
         }
 
-        // if self.my_hotkeys.reinizialize_hotkeys{
-        //     self.my_hotkeys.hotkey_item_inspection = Hotkey::new(vec![inputbot::KeybdKey::LControlKey], "hotkey_item_inspection");
-        //     self.my_hotkeys.all_hotkeys.push(self.my_hotkeys.hotkey_item_inspection.clone());
-        //     self.my_hotkeys.reinizialize_hotkeys = false;
-        // }
+        if self.my_hotkeys.reinizialize_hotkeys{
+            for hotkeys in self.my_hotkeys.all_hotkeys.iter_mut(){
+                if hotkeys.identifier == "hotkey_item_inspection"{
+                    hotkeys.key = self.my_hotkeys.hotkey_item_inspection.clone();
+                }
+            }
+            self.my_hotkeys.reinizialize_hotkeys = false;
 
-        // check_hotkeys(self);
+        }
+
+        check_hotkeys(self);
 
 
         // if true: our window has control of input (as normal), 

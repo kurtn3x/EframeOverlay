@@ -2,6 +2,7 @@ use egui::{Vec2, RichText};
 
 use super::AppComponent;
 use super::super::App;
+use super::hotkeymanager::{capture_key, Hotkey};
 
 pub struct EditMode ;
 impl EditMode{
@@ -57,8 +58,8 @@ impl EditMode{
                 //     self.app.my_hotkeys.capture_key = false;
                 // }
 
-                // let str = format!("{}", app.my_hotkeys.hotkey_item_inspection);
-                // ui.label(egui::RichText::new(str));
+                let str = format!("{:?}", app.my_hotkeys.hotkey_item_inspection);
+                ui.label(egui::RichText::new(str));
             });
         ui.add(egui::widgets::Separator::default());
         egui::Grid::new("some_unique_id")
@@ -68,21 +69,24 @@ impl EditMode{
                 // let str = format!("{}", app.my_hotkeys.hotkey_item_inspection);
                 // ui.label(str);
                 if ui.add_sized([40.0, 20.0], egui::Button::new("Capture Key1")).clicked(){
-                    // let key = capture_key();
-                    // if self.app.my_hotkeys.hotkey_item_inspection.key.len() == 0{
-                    //     self.app.my_hotkeys.hotkey_item_inspection.key.push(key);
-                    // } else {
-                    //     self.app.my_hotkeys.hotkey_item_inspection.key[0] =  key;
-                    // }
-                };
-                if ui.add_sized([40.0, 20.0], egui::Button::new("Capture Key2")).clicked(){
-                    // let key = capture_key();
-                    // self.app.my_hotkeys.hotkey_item_inspection.key[1] =  key;
-                };
-                if ui.add_sized([40.0, 20.0], egui::Button::new("Capture Key3")).clicked(){
-                    // let key = capture_key();
-                    // self.app.my_hotkeys.hotkey_item_inspection.key[2] =  key;
-                };
+                    let key = capture_key();
+                    app.my_hotkeys.hotkey_item_inspection = vec![key];
+                    app.my_hotkeys.reinizialize_hotkeys = true;
+                }
+                //     if app.my_hotkeys.hotkey_item_inspection.key.len() == 0{
+                //         app.my_hotkeys.hotkey_item_inspection.key.push(key);
+                //     } else {
+                //         app.my_hotkeys.hotkey_item_inspection.key[0] =  key;
+                //     }
+                // };
+                // if ui.add_sized([40.0, 20.0], egui::Button::new("Capture Key2")).clicked(){
+                //     let key = capture_key();
+                //     app.my_hotkeys.hotkey_item_inspection.key[1] =  key;
+                // };
+                // if ui.add_sized([40.0, 20.0], egui::Button::new("Capture Key3")).clicked(){
+                //     let key = capture_key();
+                //     app.my_hotkeys.hotkey_item_inspection.key[2] =  key;
+                // };
                 ui.end_row();
             
                 ui.label("Description2");
