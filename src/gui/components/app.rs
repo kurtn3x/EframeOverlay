@@ -13,6 +13,7 @@ use super::super::{App, GeneralSettings, ItemInspectionSettings, MyHotkeys};
 use super::background_mode::BackgroundMode;
 use super::edit_mode::EditMode;
 use super::hotkeymanager::{check_hotkeys, Hotkey};
+use super::setup::SetupWindow;
 use super::AppComponent;
 
 impl App {
@@ -158,10 +159,14 @@ impl eframe::App for App {
 
         // the main panel that covers almost the full screen
 
-        if self.edit_mode {
-            EditMode::run(ctx, frame, self);
+        if self.general_settings.setup {
+            Set
         } else {
-            BackgroundMode::run(ctx, frame, self);
+            if self.edit_mode {
+                EditMode::run(ctx, frame, self);
+            } else {
+                BackgroundMode::run(ctx, frame, self);
+            }
         }
         // bottom panel
         show_bottom_panel(ctx, frame, self.general_settings.cursor_location, self);

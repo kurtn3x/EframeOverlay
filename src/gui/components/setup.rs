@@ -24,7 +24,7 @@ impl SetupWindow {
                 {
                     app.general_settings.cursor_hittest = true;
                     if inspection_window_close_button.clicked() {
-                        app.item_inspection_settings.hotkey_item_inspection_pressed = false;
+                        app.general_settings.setup = false;
                     }
                 }
             });
