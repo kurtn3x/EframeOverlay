@@ -2,6 +2,7 @@ pub mod app;
 pub mod background_mode;
 pub mod edit_mode;
 pub mod hotkeymanager;
+pub mod setup;
 use super::super::App;
 use eframe::{egui::Ui, Frame};
 

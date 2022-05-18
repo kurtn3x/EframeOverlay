@@ -323,6 +323,18 @@ impl Frame {
         self.output.cursor_hittest = Some(cursor_hittest);
     }
 
+    pub fn set_always_on_top(&mut self, always_on_top: bool) {
+        self.output.always_on_top = Some(always_on_top);
+    }
+
+    pub fn get_monitors(&mut self) -> Vec<winit::monitor::MonitorHandle> {
+        self.output.monitors.clone()
+    }
+
+    pub fn current_monitor(&mut self) -> winit::monitor::MonitorHandle {
+        self.output.current_monitor[0].clone()
+    }
+
     /// When called, the native window will follow the
     /// movement of the cursor while the primary mouse button is down.
     ///
@@ -415,6 +427,10 @@ pub struct IntegrationInfo {
 
     /// The OS native pixels-per-point
     pub native_pixels_per_point: Option<f32>,
+
+    pub all_monitors: Vec<winit::monitor::MonitorHandle>,
+
+    pub current_monitor: winit::monitor::MonitorHandle,
 }
 
 // ----------------------------------------------------------------------------
@@ -465,6 +481,7 @@ pub fn set_value<T: serde::Serialize>(storage: &mut dyn Storage, key: &str, valu
 pub const APP_KEY: &str = "app";
 
 // ----------------------------------------------------------------------------
+use winit::monitor::MonitorHandle;
 
 /// You only need to look here if you are writing a backend for `epi`.
 #[doc(hidden)]
@@ -494,5 +511,10 @@ pub mod backend {
 
         pub cursor_hittest: Option<bool>,
 
+        pub always_on_top: Option<bool>,
+
+        pub monitors: Vec<winit::monitor::MonitorHandle>,
+
+        pub current_monitor: Vec<winit::monitor::MonitorHandle>,
     }
 }

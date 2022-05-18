@@ -111,19 +111,21 @@ impl eframe::App for App {
             item_inspection_settings,
             my_hotkeys,
         } = self;
-
         // getting our cursor position to check if our cursor is hovering over a specific thing . windows only
         let temp_cursor: (i32, i32) = enigo::Enigo::mouse_location();
         self.general_settings.cursor_location = Pos2 {
             x: (temp_cursor.0 as f32 - self.general_settings.window_pos.x),
             y: (temp_cursor.1 as f32 - self.general_settings.window_pos.y),
         };
+        println!("{:?}", frame.info.current_monitor.size());
 
+        // frame.get_resolution();
         // this will set up the windo and fix dpi errors as well as setup hotkeys,
         // idk how this runs some resolutions, only tested 1920x1080
         // can also be reset to reinitialize windows / hotkeys
         if self.general_settings.first_run {
             let pixels_per_point = ctx.pixels_per_point();
+            self.general_settings.window_size = Vec2 { x: 0.0, y: 0.0 };
             self.update_window(frame, pixels_per_point);
             self.general_settings.first_run = false;
             ctx.set_pixels_per_point(1.0);
@@ -160,17 +162,15 @@ impl eframe::App for App {
         // the main panel that covers almost the full screen
 
         if self.general_settings.setup {
-            Set
-        } else {
-            if self.edit_mode {
-                EditMode::run(ctx, frame, self);
-            } else {
-                BackgroundMode::run(ctx, frame, self);
-            }
+            SetupWindow::run(ctx, frame, self);
+        } else if self.edit_mode && !self.general_settings.setup {
+            EditMode::run(ctx, frame, self);
+            show_bottom_panel(ctx, frame, self.general_settings.cursor_location, self);
+        } else if !self.edit_mode && !self.general_settings.setup {
+            BackgroundMode::run(ctx, frame, self);
+            show_bottom_panel(ctx, frame, self.general_settings.cursor_location, self);
         }
         // bottom panel
-        show_bottom_panel(ctx, frame, self.general_settings.cursor_location, self);
-
         if self.show_window_1 {
             egui::Window::new("Some Window")
                 .resizable(false)

@@ -38,8 +38,7 @@ pub fn window_builder(
         .with_decorations(*decorated)
         .with_resizable(*resizable)
         .with_transparent(*transparent)
-        .with_window_icon(window_icon)
-        ;
+        .with_window_icon(window_icon);
 
     if let Some(min_size) = *min_window_size {
         window_builder = window_builder.with_min_inner_size(points_to_size(min_size));
@@ -94,8 +93,10 @@ pub fn handle_app_output(
     current_pixels_per_point: f32,
     app_output: epi::backend::AppOutput,
 ) {
-
     let epi::backend::AppOutput {
+        current_monitor,
+        monitors,
+        always_on_top,
         cursor_hittest,
         quit: _,
         window_size,
@@ -113,6 +114,9 @@ pub fn handle_app_output(
         window.set_cursor_hittest(cursor_hittest);
     }
 
+    if let Some(always_on_top) = always_on_top {
+        window.set_always_on_top(always_on_top)
+    }
 
     if let Some(window_size) = window_size {
         window.set_inner_size(
@@ -178,9 +182,16 @@ impl EpiIntegration {
 
         let prefer_dark_mode = prefer_dark_mode();
 
+        let mut monitors = vec![];
+
+        for monitor in window.available_monitors() {
+            monitors.push(monitor);
+        }
 
         let frame = epi::Frame {
             info: epi::IntegrationInfo {
+                all_monitors: monitors,
+                current_monitor: window.current_monitor().unwrap(),
                 web_info: None,
                 prefer_dark_mode,
                 cpu_usage: None,
@@ -196,7 +207,6 @@ impl EpiIntegration {
         } else {
             egui_ctx.set_visuals(egui::Visuals::light());
         }
-
 
         Self {
             frame,

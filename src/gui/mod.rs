@@ -22,8 +22,11 @@ pub struct GeneralSettings {
     pub window_size: Vec2,
     pub window_pos: Pos2,
     pub first_run: bool,
-    pub cursor_location: Pos2,
     pub setup: bool,
+    pub cursor_location: Pos2,
+    pub window_on_top: bool,
+    pub transparent: bool,
+    pub decorated: bool,
 }
 
 pub struct App {
@@ -61,6 +64,9 @@ impl Default for App {
                 first_run: true,
                 cursor_location: Pos2 { x: 0.0, y: 0.0 },
                 setup: true,
+                window_on_top: true,
+                decorated: false,
+                transparent: true,
             },
             item_inspection_settings: ItemInspectionSettings {
                 hotkey_item_inspection_pressed: false,
