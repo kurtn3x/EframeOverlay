@@ -8,18 +8,18 @@ use gui::App;
 #[cfg(not(target_arch = "wasm32"))]
 
 fn main() {
-    let native_options = eframe::NativeOptions{
+    let native_options = eframe::NativeOptions {
         initial_window_pos: Some(App::default().general_settings.window_pos),
-        initial_window_size : Some(App::default().general_settings.window_size),
-        resizable:true,
+        initial_window_size: Some(App::default().general_settings.window_size),
+        resizable: true,
         decorated: false,
         transparent: true,
-        always_on_top:true,
-        ..eframe::NativeOptions::default()};
+        always_on_top: true,
+        ..eframe::NativeOptions::default()
+    };
     eframe::run_native(
         "RustyPoe",
         native_options,
         Box::new(|cc| Box::new(App::new(cc))),
     );
-
 }

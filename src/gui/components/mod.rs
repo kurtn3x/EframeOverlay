@@ -1,11 +1,9 @@
 pub mod app;
-pub mod hotkeymanager;
-pub mod edit_mode;
 pub mod background_mode;
-use eframe::{egui::Ui, Frame};
+pub mod edit_mode;
+pub mod hotkeymanager;
 use super::super::App;
-
-
+use eframe::{egui::Ui, Frame};
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum EditModeTabs {
@@ -22,10 +20,9 @@ pub enum GUIMode {
 }
 
 pub trait AppComponent {
-
     // #[allow(unused)]
     // fn add(ctx: &mut Self::Context, ui: &mut Ui) {}
 
     #[allow(unused)]
-    fn add (ctx: &egui::Context, frame: &Frame, app: &mut App) {}
+    fn run(ctx: &egui::Context, frame: &Frame, app: &mut App) {}
 }
