@@ -3,8 +3,13 @@ use inputbot::KeybdKey;
 use std::fmt;
 use std::ops::IndexMut;
 use strum::IntoEnumIterator;
+use winapi::{
+    ctypes::*,
+    shared::{minwindef::*, windef::*},
+    um::winuser::*,
+};
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Hotkey<'a> {
     key_state: Vec<i16>,
     activated: Vec<bool>,
@@ -63,6 +68,9 @@ impl Hotkey<'_> {
         // as soon as both key states are active, it will return true and block input
         // until at least 1 of the keys is released
         if self.key.len() > 1 {
+            if self.activated.len() == 1 {
+                self.activated.push(false);
+            }
             for (pos, key) in self.key.iter_mut().enumerate() {
                 let temp2 = key.is_pressed();
                 self.activated[pos] = temp2;
@@ -112,21 +120,46 @@ impl Hotkey<'_> {
     }
 }
 
+#[derive(Debug)]
 struct CaptureKeys {
     keys: Vec<KeybdKey>,
     keystate: Vec<bool>,
 }
 
 /// capture any key and return it if pressed
-pub fn capture_key() -> KeybdKey {
+pub fn capture_key() -> Vec<KeybdKey> {
     let mut MyKeys = CaptureKeys {
         keys: vec![],
         keystate: vec![],
     };
     'outer: loop {
         'inner: for key in inputbot::KeybdKey::iter() {
-            if key.is_pressed() {
-                return key;
+            let state = (unsafe { GetAsyncKeyState(u64::from(key) as i32) } >> 15);
+            if state != 0 {
+                if !MyKeys.keys.contains(&key) {
+                    MyKeys.keys.push(key);
+                    MyKeys.keystate.push(true);
+                }
+            } else if MyKeys.keys.contains(&key) && state == 0 {
+                for (i, keys) in MyKeys.keys.iter().enumerate() {
+                    if keys == &key {
+                        MyKeys.keystate[i] = false;
+                    }
+                }
+            }
+
+            let keystatelen = MyKeys.keystate.len();
+            let mut templen = 0;
+
+            for state in MyKeys.keystate.iter_mut() {
+                if state == &mut false {
+                    templen += 1;
+                }
+            }
+            // println!("{:?}", MyKeys);
+
+            if keystatelen != 0 && templen == keystatelen {
+                return MyKeys.keys;
             }
         }
     }
@@ -134,7 +167,7 @@ pub fn capture_key() -> KeybdKey {
 
 // all the hotkeys and what they are supposed to do
 pub fn check_hotkeys(app: &mut App) {
-    for hotkey in app.my_hotkeys.all_hotkeys.iter_mut() {
+    for hotkey in app.hotkey_settings.all_hotkeys.iter_mut() {
         if hotkey.identifier == "first_hotkey" {
             if hotkey.check() {
                 println!("CapsLock + Tab pressed!");
@@ -149,6 +182,37 @@ pub fn check_hotkeys(app: &mut App) {
             {
                 app.item_inspection_settings.hotkey_item_inspection_pressed = false;
             }
+        } else if hotkey.identifier == "hotkey1" {
+            if hotkey.check() {
+                println!("hotkey1");
+            }
+        } else if hotkey.identifier == "hotkey2" {
+            if hotkey.check() {
+                println!("hotkey2");
+            }
+        } else if hotkey.identifier == "hotkey3" {
+            if hotkey.check() {
+                println!("hotkey3");
+            }
         }
     }
+}
+
+pub fn reinitialize_hotkeys(app: &mut App) {
+    for hotkeys in app.hotkey_settings.all_hotkeys.iter_mut() {
+        if hotkeys.identifier == "hotkey_item_inspection" {
+            hotkeys.key = app
+                .hotkey_settings
+                .custom_hotkeys
+                .hotkey_item_inspection
+                .clone();
+        } else if hotkeys.identifier == "hotkey1" {
+            hotkeys.key = app.hotkey_settings.custom_hotkeys.hotkey1.clone();
+        } else if hotkeys.identifier == "hotkey2" {
+            hotkeys.key = app.hotkey_settings.custom_hotkeys.hotkey2.clone();
+        } else if hotkeys.identifier == "hotkey3" {
+            hotkeys.key = app.hotkey_settings.custom_hotkeys.hotkey3.clone();
+        }
+    }
+    app.hotkey_settings.reinitialize_hotkeys = false;
 }

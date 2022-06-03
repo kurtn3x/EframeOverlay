@@ -1,16 +1,19 @@
 use super::App;
 pub struct SetupWindow {}
+use super::hotkeymanager::{check_hotkeys, Hotkey};
+use egui::{style::Visuals, Pos2, Style, Vec2};
+use inputbot::KeybdKey;
 
 impl SetupWindow {
     pub fn run(ctx: &egui::Context, frame: &eframe::Frame, app: &mut App) {
         egui::Window::new("Initial Setup")
-            .current_pos(
-                app.item_inspection_settings
-                    .hotkey_item_inspection_pressed_initial_position,
-            )
+            .default_pos(Pos2 {
+                x: app.general_settings.window_size.x / 2.0,
+                y: app.general_settings.window_size.y / 2.0,
+            })
             .resizable(true)
             .frame(egui::Frame {
-                fill: egui::Color32::from_rgba_premultiplied(180, 180, 180, 180),
+                fill: egui::Color32::from_rgba_premultiplied(255, 255, 255, 255),
                 ..egui::Frame::default()
             })
             .collapsible(true)
@@ -20,14 +23,31 @@ impl SetupWindow {
                 ui.visuals_mut().override_text_color = Some(egui::Color32::BLACK);
                 let inspection_window_close_button =
                     ui.add(egui::Button::new("Close").fill(egui::Color32::WHITE));
-                if inspection_window_close_button
-                    .rect
+                if ctx
+                    .used_rect()
                     .contains(app.general_settings.cursor_location)
                 {
                     app.general_settings.cursor_hittest = true;
                     if inspection_window_close_button.clicked() {
                         app.general_settings.setup = false;
+                        app.general_settings.always_on_top = true;
+                        app.general_settings.reinitialize = true;
+                        app.hotkey_settings.all_hotkeys.push(Hotkey::new(
+                            vec![KeybdKey::LControlKey],
+                            "hotkey_item_inspection",
+                        ));
+                        app.hotkey_settings
+                            .all_hotkeys
+                            .push(Hotkey::new(vec![KeybdKey::LControlKey], "hotkey1"));
+                        app.hotkey_settings
+                            .all_hotkeys
+                            .push(Hotkey::new(vec![KeybdKey::LControlKey], "hotkey2"));
+                        app.hotkey_settings
+                            .all_hotkeys
+                            .push(Hotkey::new(vec![KeybdKey::LControlKey], "hotkey3"));
                     }
+                } else {
+                    app.general_settings.cursor_hittest = false;
                 }
             });
     }

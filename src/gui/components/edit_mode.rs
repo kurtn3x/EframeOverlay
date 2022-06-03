@@ -3,6 +3,19 @@ use egui::{RichText, Vec2};
 use super::super::App;
 use super::hotkeymanager::{capture_key, Hotkey};
 use super::AppComponent;
+use inputbot::KeybdKey;
+use strum::IntoEnumIterator;
+use winapi::{
+    ctypes::*,
+    shared::{minwindef::*, windef::*},
+    um::winuser::*,
+};
+
+#[derive(Debug)]
+struct CaptureKeys {
+    keys: Vec<KeybdKey>,
+    keystate: Vec<bool>,
+}
 
 pub struct EditMode;
 impl EditMode {
@@ -45,69 +58,65 @@ impl EditMode {
                         })
                     })
                 });
-                ui.add_space(20.0);
-                ui.horizontal(|ui| {
-                    ui.add_space(20.0);
-                    ui.heading("ITEM INSPECTION HOTKEY");
-                    if ui
-                        .add_sized([40.0, 20.0], egui::Button::new("Capture Hotkey...."))
-                        .clicked()
-                    {
-                        // app.my_hotkeys.capture_key = true;
-                    }
-
-                    // if app.my_hotkeys.capture_key{
-                    //     let key = capture_key();
-                    //     println!("{:?}", key);
-                    //     self.app.my_hotkeys.capture_key = false;
-                    // }
-
-                    let str = format!("{:?}", app.my_hotkeys.hotkey_item_inspection);
-                    ui.label(egui::RichText::new(str));
-                });
+                ui.heading("HOTKEY SETTINGS");
+                ui.add_space(5.0);
                 ui.add(egui::widgets::Separator::default());
                 egui::Grid::new("some_unique_id")
                     .striped(true)
                     .show(ui, |ui| {
-                        ui.label("Description1");
-                        // let str = format!("{}", app.my_hotkeys.hotkey_item_inspection);
-                        // ui.label(str);
+                        ui.label("hotkey_item_inspection");
                         if ui
-                            .add_sized([40.0, 20.0], egui::Button::new("Capture Key1"))
+                            .add_sized([40.0, 20.0], egui::Button::new("Capture Key"))
                             .clicked()
                         {
                             let key = capture_key();
-                            app.my_hotkeys.hotkey_item_inspection = vec![key];
-                            app.my_hotkeys.reinizialize_hotkeys = true;
+                            app.hotkey_settings.custom_hotkeys.hotkey_item_inspection = key;
+                            app.hotkey_settings.reinitialize_hotkeys = true;
                         }
-                        //     if app.my_hotkeys.hotkey_item_inspection.key.len() == 0{
-                        //         app.my_hotkeys.hotkey_item_inspection.key.push(key);
-                        //     } else {
-                        //         app.my_hotkeys.hotkey_item_inspection.key[0] =  key;
-                        //     }
-                        // };
-                        // if ui.add_sized([40.0, 20.0], egui::Button::new("Capture Key2")).clicked(){
-                        //     let key = capture_key();
-                        //     app.my_hotkeys.hotkey_item_inspection.key[1] =  key;
-                        // };
-                        // if ui.add_sized([40.0, 20.0], egui::Button::new("Capture Key3")).clicked(){
-                        //     let key = capture_key();
-                        //     app.my_hotkeys.hotkey_item_inspection.key[2] =  key;
-                        // };
+                        let str = format!(
+                            "{:?}",
+                            app.hotkey_settings.custom_hotkeys.hotkey_item_inspection
+                        );
+                        ui.label(str);
                         ui.end_row();
 
-                        ui.label("Description2");
-                        ui.label("KeybindsInfo2");
-                        ui.label("Keybind1");
-                        ui.label("Keybind2");
-                        ui.label("Keybind3");
+                        ui.label("Hotkey1");
+                        if ui
+                            .add_sized([40.0, 20.0], egui::Button::new("Capture Key"))
+                            .clicked()
+                        {
+                            let key = capture_key();
+                            app.hotkey_settings.custom_hotkeys.hotkey1 = key;
+                            app.hotkey_settings.reinitialize_hotkeys = true;
+                        }
+                        let str = format!("{:?}", app.hotkey_settings.custom_hotkeys.hotkey1);
+                        ui.label(str);
                         ui.end_row();
 
-                        ui.label("Description3");
-                        ui.label("KeybindsInfo3");
-                        ui.label("Keybind1");
-                        ui.label("Keybind2");
-                        ui.label("Keybind3");
+                        ui.label("Hotkey2");
+                        if ui
+                            .add_sized([40.0, 20.0], egui::Button::new("Capture Key"))
+                            .clicked()
+                        {
+                            let key = capture_key();
+                            app.hotkey_settings.custom_hotkeys.hotkey2 = key;
+                            app.hotkey_settings.reinitialize_hotkeys = true;
+                        }
+                        let str = format!("{:?}", app.hotkey_settings.custom_hotkeys.hotkey2);
+                        ui.label(str);
+                        ui.end_row();
+
+                        ui.label("Hotkey3");
+                        if ui
+                            .add_sized([40.0, 20.0], egui::Button::new("Capture Key"))
+                            .clicked()
+                        {
+                            let key = capture_key();
+                            app.hotkey_settings.custom_hotkeys.hotkey3 = key;
+                            app.hotkey_settings.reinitialize_hotkeys = true;
+                        }
+                        let str = format!("{:?}", app.hotkey_settings.custom_hotkeys);
+                        ui.label(str);
                         ui.end_row();
                     });
             });

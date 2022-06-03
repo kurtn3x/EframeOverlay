@@ -9,12 +9,13 @@ extern crate clipboard;
 extern crate rev_lines;
 use clipboard::ClipboardProvider;
 extern crate input;
-use super::super::{App, GeneralSettings, ItemInspectionSettings, MyHotkeys};
+use super::super::{App, GeneralSettings, HotkeySettings, ItemInspectionSettings};
 use super::background_mode::BackgroundMode;
 use super::edit_mode::EditMode;
-use super::hotkeymanager::{check_hotkeys, Hotkey};
+use super::hotkeymanager::{check_hotkeys, reinitialize_hotkeys, Hotkey};
 use super::setup::SetupWindow;
 use super::AppComponent;
+use inputbot::KeybdKey;
 
 impl App {
     /// Called once before the first frame.
@@ -54,8 +55,8 @@ impl App {
     fn update_window(&self, frame: &mut eframe::Frame, pixels_per_point: f32) {
         frame.set_window_pos(self.general_settings.window_pos);
         frame.set_window_size(Vec2 {
-            x: (self.general_settings.window_size.x / pixels_per_point),
-            y: (self.general_settings.window_size.y / pixels_per_point),
+            x: ((self.general_settings.window_size.x - 1.0) / pixels_per_point),
+            y: ((self.general_settings.window_size.y - 1.0) / pixels_per_point),
         });
     }
 
@@ -109,7 +110,7 @@ impl eframe::App for App {
             current_clipboard,
             some_option,
             item_inspection_settings,
-            my_hotkeys,
+            hotkey_settings,
         } = self;
         // getting our cursor position to check if our cursor is hovering over a specific thing . windows only
         let temp_cursor: (i32, i32) = enigo::Enigo::mouse_location();
@@ -117,50 +118,36 @@ impl eframe::App for App {
             x: (temp_cursor.0 as f32 - self.general_settings.window_pos.x),
             y: (temp_cursor.1 as f32 - self.general_settings.window_pos.y),
         };
-        println!("{:?}", frame.info.current_monitor.size());
 
-        // frame.get_resolution();
         // this will set up the windo and fix dpi errors as well as setup hotkeys,
         // idk how this runs some resolutions, only tested 1920x1080
         // can also be reset to reinitialize windows / hotkeys
-        if self.general_settings.first_run {
+        if self.general_settings.reinitialize {
+            self.general_settings.window_size = Vec2 {
+                x: frame.info.current_monitor.size().width as f32,
+                y: frame.info.current_monitor.size().height as f32,
+            };
             let pixels_per_point = ctx.pixels_per_point();
-            self.general_settings.window_size = Vec2 { x: 0.0, y: 0.0 };
             self.update_window(frame, pixels_per_point);
-            self.general_settings.first_run = false;
+            self.general_settings.reinitialize = false;
             ctx.set_pixels_per_point(1.0);
-            // self.my_hotkeys.all_hotkeys.push(self.my_hotkeys.hotkey_item_inspection);
-
-            // let hotkey_with_2_keys = Hotkey::new(vec![inputbot::KeybdKey::CapsLockKey, inputbot::KeybdKey::TabKey], "first_hotkey");
-            // self.my_hotkeys.all_hotkeys.push(hotkey_with_2_keys);
-            let hotkey_with_1_key = Hotkey::new(
-                vec![inputbot::KeybdKey::LControlKey],
-                "hotkey_item_inspection",
-            );
-            self.my_hotkeys.all_hotkeys.push(hotkey_with_1_key);
-        }
-
-        if self.my_hotkeys.reinizialize_hotkeys {
-            for hotkeys in self.my_hotkeys.all_hotkeys.iter_mut() {
-                if hotkeys.identifier == "hotkey_item_inspection" {
-                    hotkeys.key = self.my_hotkeys.hotkey_item_inspection.clone();
-                }
-            }
-            self.my_hotkeys.reinizialize_hotkeys = false;
+            frame.set_always_on_top(self.general_settings.always_on_top);
         }
 
         check_hotkeys(self);
 
         // if true: our window has control of input (as normal),
         // if false: our window lets any input trough to the next window
-        if self.general_settings.cursor_hittest == true {
+        if self.general_settings.cursor_hittest {
             frame.set_cursor_hittest(true);
         } else {
             frame.set_cursor_hittest(false);
         }
+        if self.hotkey_settings.reinitialize_hotkeys {
+            reinitialize_hotkeys(self);
+        }
 
         // the main panel that covers almost the full screen
-
         if self.general_settings.setup {
             SetupWindow::run(ctx, frame, self);
         } else if self.edit_mode && !self.general_settings.setup {
@@ -170,7 +157,7 @@ impl eframe::App for App {
             BackgroundMode::run(ctx, frame, self);
             show_bottom_panel(ctx, frame, self.general_settings.cursor_location, self);
         }
-        // bottom panel
+
         if self.show_window_1 {
             egui::Window::new("Some Window")
                 .resizable(false)
@@ -208,7 +195,7 @@ fn show_bottom_panel(
             fill: egui::Color32::TRANSPARENT,
             ..egui::Frame::default()
         })
-        // .min_height(100.0)
+        .min_height(100.0)
         .show(ctx, |ui| {
             egui::menu::bar(ui, |ui| {
                 let quit_button = ui.add_sized(

@@ -10,28 +10,37 @@ pub struct ItemInspectionSettings {
     pub hotkey_item_inspection_pressed_first: bool,
 }
 
-pub struct MyHotkeys {
-    pub capture_key: bool,
-    pub reinizialize_hotkeys: bool,
-    pub all_hotkeys: Vec<Hotkey<'static>>,
+#[derive(Debug)]
+pub struct CustomHotkeys {
     pub hotkey_item_inspection: Vec<KeybdKey>,
+    pub hotkey1: Vec<KeybdKey>,
+    pub hotkey2: Vec<KeybdKey>,
+    pub hotkey3: Vec<KeybdKey>,
+    // append more hotkeys here
+}
+
+#[derive(Debug)]
+pub struct HotkeySettings {
+    pub capture_key: bool,
+    pub reinitialize_hotkeys: bool,
+    pub all_hotkeys: Vec<Hotkey<'static>>,
+    pub custom_hotkeys: CustomHotkeys,
 }
 
 pub struct GeneralSettings {
     pub cursor_hittest: bool,
     pub window_size: Vec2,
     pub window_pos: Pos2,
-    pub first_run: bool,
+    pub reinitialize: bool,
     pub setup: bool,
     pub cursor_location: Pos2,
     pub window_on_top: bool,
     pub transparent: bool,
-    pub decorated: bool,
+    pub always_on_top: bool,
 }
 
 pub struct App {
     pub edit_mode: bool,
-    // subwindow handling
     show_window_1: bool,
     some_window_open: bool,
     clipboard_manager: clipboard::ClipboardContext,
@@ -42,17 +51,23 @@ pub struct App {
     pub some_option: u8,
     pub item_inspection_settings: ItemInspectionSettings,
     pub general_settings: GeneralSettings,
-    pub my_hotkeys: MyHotkeys,
+    pub hotkey_settings: HotkeySettings,
 }
 
 impl Default for App {
     fn default() -> Self {
         Self {
-            my_hotkeys: MyHotkeys {
-                reinizialize_hotkeys: true,
+            hotkey_settings: HotkeySettings {
+                reinitialize_hotkeys: true,
                 capture_key: false,
                 all_hotkeys: vec![],
-                hotkey_item_inspection: vec![],
+                custom_hotkeys: CustomHotkeys {
+                    hotkey_item_inspection: vec![],
+                    hotkey1: vec![],
+                    hotkey2: vec![],
+                    hotkey3: vec![],
+                    // append more hotkeys here
+                },
             },
             general_settings: GeneralSettings {
                 cursor_hittest: false,
@@ -61,12 +76,12 @@ impl Default for App {
                     y: 1032.0,
                 },
                 window_pos: Pos2 { x: 0.0, y: 0.0 },
-                first_run: true,
+                reinitialize: true,
                 cursor_location: Pos2 { x: 0.0, y: 0.0 },
                 setup: true,
                 window_on_top: true,
-                decorated: false,
                 transparent: true,
+                always_on_top: false,
             },
             item_inspection_settings: ItemInspectionSettings {
                 hotkey_item_inspection_pressed: false,

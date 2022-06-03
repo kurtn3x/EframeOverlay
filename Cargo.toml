@@ -19,6 +19,8 @@ winput = "0.2.5"
 pistoncore-input = "1.0.1"
 strum = "0.24"
 strum_macros = "0.24"
+winapi = { version = "0.3.9", features = ["winuser"] }
+
 
 [replace]
 "winit:0.26.1" = { path = "winit" }
