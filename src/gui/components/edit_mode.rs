@@ -3,6 +3,8 @@ use egui::{RichText, Vec2};
 use super::super::App;
 use super::hotkeymanager::{capture_key, Hotkey};
 use super::AppComponent;
+use bytes;
+use image;
 use inputbot::KeybdKey;
 use strum::IntoEnumIterator;
 use winapi::{
@@ -15,6 +17,17 @@ use winapi::{
 struct CaptureKeys {
     keys: Vec<KeybdKey>,
     keystate: Vec<bool>,
+}
+
+async fn get_bytes(url: &str) -> reqwest::Result<bytes::Bytes> {
+    let img_bytes = reqwest::blocking::get("...")?.bytes()?;
+    return Ok(img_bytes);
+}
+
+async fn download_stuff(target: &str) -> Result<bytes::Bytes, reqwest::Error> {
+    let response = reqwest::get(target).await?;
+    let content = response.bytes().await?;
+    return Ok(content);
 }
 
 pub struct EditMode;
@@ -59,20 +72,21 @@ impl EditMode {
                     })
                 });
                 ui.heading("HOTKEY SETTINGS");
-                ui.add_space(5.0);
                 ui.add(egui::widgets::Separator::default());
                 egui::Grid::new("some_unique_id")
-                    .striped(true)
+                    // .striped(true)
+                    .spacing(egui::Vec2 { x: 0.0, y: 5.0 })
                     .show(ui, |ui| {
+                    // Row: hotkey_item_inspection
+                        ui.add_space(5.0);
                         ui.label("hotkey_item_inspection");
-                        if ui
-                            .add_sized([40.0, 20.0], egui::Button::new("Capture Key"))
-                            .clicked()
-                        {
+                        ui.add_space(15.0);
+                        if ui.add(egui::Button::new("Capture Key")).clicked() {
                             let key = capture_key();
                             app.hotkey_settings.custom_hotkeys.hotkey_item_inspection = key;
                             app.hotkey_settings.reinitialize_hotkeys = true;
                         }
+                        ui.add_space(15.0);
                         let str = format!(
                             "{:?}",
                             app.hotkey_settings.custom_hotkeys.hotkey_item_inspection
@@ -80,7 +94,10 @@ impl EditMode {
                         ui.label(str);
                         ui.end_row();
 
+                    // Row: Hotkey1
+                        ui.add_space(5.0);
                         ui.label("Hotkey1");
+                        ui.add_space(15.0);
                         if ui
                             .add_sized([40.0, 20.0], egui::Button::new("Capture Key"))
                             .clicked()
@@ -89,11 +106,15 @@ impl EditMode {
                             app.hotkey_settings.custom_hotkeys.hotkey1 = key;
                             app.hotkey_settings.reinitialize_hotkeys = true;
                         }
+                        ui.add_space(15.0);
                         let str = format!("{:?}", app.hotkey_settings.custom_hotkeys.hotkey1);
                         ui.label(str);
                         ui.end_row();
 
+                    // Row: Hotkey2 
+                        ui.add_space(5.0);
                         ui.label("Hotkey2");
+                        ui.add_space(15.0);
                         if ui
                             .add_sized([40.0, 20.0], egui::Button::new("Capture Key"))
                             .clicked()
@@ -102,11 +123,15 @@ impl EditMode {
                             app.hotkey_settings.custom_hotkeys.hotkey2 = key;
                             app.hotkey_settings.reinitialize_hotkeys = true;
                         }
+                        ui.add_space(15.0);
                         let str = format!("{:?}", app.hotkey_settings.custom_hotkeys.hotkey2);
                         ui.label(str);
                         ui.end_row();
 
+                    // Row: Hotkey3
+                        ui.add_space(5.0);
                         ui.label("Hotkey3");
+                        ui.add_space(15.0);
                         if ui
                             .add_sized([40.0, 20.0], egui::Button::new("Capture Key"))
                             .clicked()
@@ -115,7 +140,8 @@ impl EditMode {
                             app.hotkey_settings.custom_hotkeys.hotkey3 = key;
                             app.hotkey_settings.reinitialize_hotkeys = true;
                         }
-                        let str = format!("{:?}", app.hotkey_settings.custom_hotkeys);
+                        ui.add_space(15.0);
+                        let str = format!("{:?}", app.hotkey_settings.custom_hotkeys.hotkey3);
                         ui.label(str);
                         ui.end_row();
                     });
@@ -219,13 +245,11 @@ impl AppComponent for EditMode {
             .show(ctx, |ui| {
                 let open_butt = ui.add_sized(
                     Vec2 { x: 100.0, y: 50.0 },
-                    egui::Button::new(RichText::new("Open Window").size(16.0))
-                        .fill(egui::Color32::WHITE),
+                    egui::Button::new("Open Window").fill(egui::Color32::WHITE).sense(egui::Sense::click_and_drag()),
                 );
                 let edit_butt = ui.add_sized(
                     Vec2 { x: 100.0, y: 50.0 },
-                    egui::Button::new(RichText::new("Edit Mode").size(16.0))
-                        .fill(egui::Color32::WHITE),
+                    egui::Button::new("Edit Mode").fill(egui::Color32::WHITE).sense(egui::Sense::click_and_drag()),
                 );
                 if edit_butt
                     .rect
@@ -235,15 +259,17 @@ impl AppComponent for EditMode {
                     if edit_butt.clicked() {
                         app.toogle_edit_mode();
                     }
-                } else if open_butt
-                    .rect
-                    .contains(app.general_settings.cursor_location)
-                {
-                    app.general_settings.cursor_hittest = true;
+                } 
+                // here
                     if open_butt.clicked() {
                         app.toogle_show_window1()
+                    } else if open_butt.drag_started(){
+                        open_butt.drag_released();
+                    } else if open_butt.drag_released(){
+                        println!("X");
                     }
-                } else {
+                    println!("{:?}", open_butt.drag_delta());
+
                     // edit mode on
                     if app.edit_mode {
                         app.general_settings.cursor_hittest = true;
@@ -252,7 +278,7 @@ impl AppComponent for EditMode {
                     else {
                         app.general_settings.cursor_hittest = false;
                     }
-                }
+                
                 let painter = ui.painter();
                 let rect = ui.max_rect();
                 painter.text(

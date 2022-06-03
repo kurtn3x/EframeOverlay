@@ -12,6 +12,7 @@ pub struct ItemInspectionSettings {
 
 #[derive(Debug)]
 pub struct CustomHotkeys {
+    // those are temp hotkeys, they are used to store the hotkey and later copy the hotkey into the respective one in all_hotkeys
     pub hotkey_item_inspection: Vec<KeybdKey>,
     pub hotkey1: Vec<KeybdKey>,
     pub hotkey2: Vec<KeybdKey>,
@@ -28,6 +29,7 @@ pub struct HotkeySettings {
 }
 
 pub struct GeneralSettings {
+    pub global_scale: f32,
     pub cursor_hittest: bool,
     pub window_size: Vec2,
     pub window_pos: Pos2,
@@ -60,7 +62,10 @@ impl Default for App {
             hotkey_settings: HotkeySettings {
                 reinitialize_hotkeys: true,
                 capture_key: false,
+                // those are the real hotkeys, that we will use to iterate over
                 all_hotkeys: vec![],
+
+                // those are temp hotkeys, they are used to store the hotkey and later copy the hotkey into the respective one in all_hotkeys
                 custom_hotkeys: CustomHotkeys {
                     hotkey_item_inspection: vec![],
                     hotkey1: vec![],
@@ -70,6 +75,7 @@ impl Default for App {
                 },
             },
             general_settings: GeneralSettings {
+                global_scale: 1.0,
                 cursor_hittest: false,
                 window_size: Vec2 {
                     x: 1919.0,

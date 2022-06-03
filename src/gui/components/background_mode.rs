@@ -17,13 +17,11 @@ impl AppComponent for BackgroundMode {
             .show(ctx, |ui| {
                 let open_butt = ui.add_sized(
                     Vec2 { x: 100.0, y: 50.0 },
-                    egui::Button::new(RichText::new("Open Window").size(16.0))
-                        .fill(egui::Color32::WHITE),
+                    egui::Button::new("Open Window").fill(egui::Color32::WHITE),
                 );
                 let edit_butt = ui.add_sized(
                     Vec2 { x: 100.0, y: 50.0 },
-                    egui::Button::new(RichText::new("Edit Mode").size(16.0))
-                        .fill(egui::Color32::WHITE),
+                    egui::Button::new("Edit Mode").fill(egui::Color32::WHITE),
                 );
 
                 if edit_butt

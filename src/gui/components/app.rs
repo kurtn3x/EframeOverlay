@@ -15,6 +15,9 @@ use super::edit_mode::EditMode;
 use super::hotkeymanager::{check_hotkeys, reinitialize_hotkeys, Hotkey};
 use super::setup::SetupWindow;
 use super::AppComponent;
+use egui::FontFamily::Proportional;
+use egui::FontId;
+use egui::TextStyle::*;
 use inputbot::KeybdKey;
 
 impl App {
@@ -132,6 +135,22 @@ impl eframe::App for App {
             self.general_settings.reinitialize = false;
             ctx.set_pixels_per_point(1.0);
             frame.set_always_on_top(self.general_settings.always_on_top);
+            let mut style = (*ctx.style()).clone();
+
+            // Redefine text_styles
+            style.text_styles = [
+                (Heading, FontId::new(30.0, Proportional)),
+                (Name("Heading2".into()), FontId::new(25.0, Proportional)),
+                (Name("Context".into()), FontId::new(23.0, Proportional)),
+                (Body, FontId::new(18.0, Proportional)),
+                (Monospace, FontId::new(14.0, Proportional)),
+                (Button, FontId::new(20.0, Proportional)),
+                (Small, FontId::new(10.0, Proportional)),
+            ]
+            .into();
+
+            // Mutate global style with above changes
+            ctx.set_style(style);
         }
 
         check_hotkeys(self);

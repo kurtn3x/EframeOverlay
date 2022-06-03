@@ -156,7 +156,6 @@ pub fn capture_key() -> Vec<KeybdKey> {
                     templen += 1;
                 }
             }
-            // println!("{:?}", MyKeys);
 
             if keystatelen != 0 && templen == keystatelen {
                 return MyKeys.keys;
@@ -198,6 +197,8 @@ pub fn check_hotkeys(app: &mut App) {
     }
 }
 
+/// reinitialize all hotkeys by copying the values from the temp hotkeys into the values of the real hotkeys
+/// will be called after changing any hotkey
 pub fn reinitialize_hotkeys(app: &mut App) {
     for hotkeys in app.hotkey_settings.all_hotkeys.iter_mut() {
         if hotkeys.identifier == "hotkey_item_inspection" {
