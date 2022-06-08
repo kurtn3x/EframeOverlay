@@ -59,6 +59,20 @@ impl Hotkey<'_> {
         }
     }
 
+    pub fn update(&mut self, key: Vec<inputbot::KeybdKey>)  {
+        let mut tmp_cr_key_state: Vec<i16> = vec![];
+        let mut tmp_cr_activated: Vec<bool> = vec![];
+        for item in key.iter() {
+            tmp_cr_key_state.push(10);
+            tmp_cr_activated.push(false);
+        }
+
+        self.key_state = tmp_cr_key_state;
+        self.activated = tmp_cr_activated;
+        self.key = key;
+    }
+
+
     /// check if this hotkey is pressed, depending on how many keys are given, this method acts differently
     /// 1 key: return true if the key is released
     /// more than 1 key: return true, when all the keys are activated at the same time for the first time, as soon as one of the keys is released, it can be repressed to return true again.
@@ -68,11 +82,12 @@ impl Hotkey<'_> {
         // as soon as both key states are active, it will return true and block input
         // until at least 1 of the keys is released
         if self.key.len() > 1 {
-            if self.activated.len() == 1 {
-                self.activated.push(false);
-            }
+            // if self.activated.len() == 1 {
+            //     self.activated.push(false);
+            // }
             for (pos, key) in self.key.iter_mut().enumerate() {
                 let temp2 = key.is_pressed();
+                println!("{:?} {}", self.activated, &temp2);
                 self.activated[pos] = temp2;
             }
 

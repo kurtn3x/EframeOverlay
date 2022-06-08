@@ -25,5 +25,5 @@ pub trait AppComponent {
     // fn add(ctx: &mut Self::Context, ui: &mut Ui) {}
 
     #[allow(unused)]
-    fn run(ctx: &egui::Context, frame: &Frame, app: &mut App) {}
+    fn run(ctx: &egui::Context, frame: &mut Frame, app: &mut App) {}
 }

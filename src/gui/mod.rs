@@ -1,6 +1,6 @@
 use self::components::hotkeymanager::Hotkey;
 use clipboard::ClipboardProvider;
-use egui::{Pos2, Vec2};
+use egui::{Pos2, Vec2, Ui};
 use inputbot::KeybdKey;
 mod components;
 
@@ -41,6 +41,17 @@ pub struct GeneralSettings {
     pub always_on_top: bool,
 }
 
+pub struct UiSettings{
+    pub position: egui::Rect,
+    pub size: f32,
+    pub color: egui::Color32,
+}
+pub struct WidgetSettings{
+    pub edit_button : UiSettings,
+    pub open_window_button: UiSettings,
+    pub quit_button: UiSettings,
+}
+
 pub struct App {
     pub edit_mode: bool,
     show_window_1: bool,
@@ -54,11 +65,25 @@ pub struct App {
     pub item_inspection_settings: ItemInspectionSettings,
     pub general_settings: GeneralSettings,
     pub hotkey_settings: HotkeySettings,
+    pub widget_settings: WidgetSettings,
 }
 
 impl Default for App {
     fn default() -> Self {
         Self {
+            widget_settings: WidgetSettings { 
+                edit_button: UiSettings { position: egui::Rect{min: egui::Pos2{x:0.0, y:200.0},
+                                                            max: egui::Pos2{x:100.0, y:300.0}},
+                                        size: 100.0,
+                                        color: egui::Color32::WHITE }, 
+                open_window_button: UiSettings { position: egui::Rect{min: egui::Pos2{x:100.0, y:200.0},
+                                                                    max: egui::Pos2{x:200.0, y:300.0}},
+                                                size: 100.0,
+                                                color: egui::Color32::BLACK }, 
+                quit_button: UiSettings {position: egui::Rect{min: egui::Pos2{x:100.0, y:200.0},
+                                                            max: egui::Pos2{x:200.0, y:300.0}},
+                                        size: 100.0, 
+                                        color: egui::Color32::RED  } },
             hotkey_settings: HotkeySettings {
                 reinitialize_hotkeys: true,
                 capture_key: false,

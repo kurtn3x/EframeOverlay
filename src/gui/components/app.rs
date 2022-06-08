@@ -102,6 +102,7 @@ impl eframe::App for App {
 
     fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
         let Self {
+            widget_settings,
             show_window_1,
             general_settings,
             edit_mode,
@@ -171,10 +172,8 @@ impl eframe::App for App {
             SetupWindow::run(ctx, frame, self);
         } else if self.edit_mode && !self.general_settings.setup {
             EditMode::run(ctx, frame, self);
-            show_bottom_panel(ctx, frame, self.general_settings.cursor_location, self);
         } else if !self.edit_mode && !self.general_settings.setup {
             BackgroundMode::run(ctx, frame, self);
-            show_bottom_panel(ctx, frame, self.general_settings.cursor_location, self);
         }
 
         if self.show_window_1 {

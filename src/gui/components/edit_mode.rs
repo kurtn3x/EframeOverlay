@@ -236,13 +236,14 @@ impl EditMode {
 }
 
 impl AppComponent for EditMode {
-    fn run(ctx: &egui::Context, frame: &eframe::Frame, app: &mut App) {
+    fn run(ctx: &egui::Context, frame: &mut eframe::Frame, app: &mut App) {
         egui::CentralPanel::default()
             .frame(egui::Frame {
                 fill: egui::Color32::from_rgba_premultiplied(18, 18, 18, 180),
                 ..egui::Frame::default()
             })
             .show(ctx, |ui| {
+                
                 let open_butt = ui.add_sized(
                     Vec2 { x: 100.0, y: 50.0 },
                     egui::Button::new("Open Window").fill(egui::Color32::WHITE).sense(egui::Sense::click_and_drag()),
@@ -264,11 +265,10 @@ impl AppComponent for EditMode {
                     if open_butt.clicked() {
                         app.toogle_show_window1()
                     } else if open_butt.drag_started(){
-                        open_butt.drag_released();
+                        // open_butt.drag_released();
                     } else if open_butt.drag_released(){
                         println!("X");
                     }
-                    println!("{:?}", open_butt.drag_delta());
 
                     // edit mode on
                     if app.edit_mode {
