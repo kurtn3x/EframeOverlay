@@ -43,6 +43,7 @@ impl EditMode {
             .collapsible(true)
             .title_bar(true)
             .resizable(false)
+            .default_pos(egui::Pos2{x: egui::Pos2::default().x + 250.0 , y: egui::Pos2::default().y + 100.0})
             .show(ctx, |ui| {
                 ui.set_min_size(Vec2 { x: 850.0, y: 900.0 });
                 ui.visuals_mut().override_text_color = Some(egui::Color32::BLACK);
@@ -159,6 +160,7 @@ impl EditMode {
         .collapsible(true)
         .title_bar(true)
         .resizable(false)
+        .default_pos(egui::Pos2{x: egui::Pos2::default().x + 250.0 , y: egui::Pos2::default().y + 100.0})
         .show(ctx, |ui| {
             ui.set_min_size(Vec2 { x: 850.0, y: 900.0 });
             ui.visuals_mut().override_text_color = Some(egui::Color32::BLACK);
@@ -187,13 +189,14 @@ impl EditMode {
                             }
                         })
                     })
+                    
                 });
                 ui.label("THIS IS TAB1");
             });
     }
 
     fn tab2(ctx: &egui::Context, frame: &eframe::Frame, app: &mut App) {
-        egui::Window::new("SETTINGS")
+        let x = egui::Window::new("SETTINGS")
         .resizable(false)
         // .anchor(egui::Align2::CENTER_CENTER, Vec2 { x: 0.0, y: -40.0 })
         .frame(egui::Frame {
@@ -203,6 +206,7 @@ impl EditMode {
         .collapsible(true)
         .title_bar(true)
         .resizable(false)
+        .default_pos(egui::Pos2{x: egui::Pos2::default().x + 250.0 , y: egui::Pos2::default().y + 100.0})
         .show(ctx, |ui| {
             ui.set_min_size(Vec2 { x: 850.0, y: 900.0 });
             ui.visuals_mut().override_text_color = Some(egui::Color32::BLACK);
@@ -241,7 +245,7 @@ impl AppComponent for EditMode {
     fn run(ctx: &egui::Context, frame: &mut eframe::Frame, app: &mut App) {
         egui::CentralPanel::default()
             .frame(egui::Frame {
-                fill: egui::Color32::TRANSPARENT,
+                fill: egui::Color32::from_rgba_premultiplied(25, 25, 25, 40),
                 ..egui::Frame::default()
             })
             .show(ctx, |ui| {
@@ -305,7 +309,7 @@ impl AppComponent for EditMode {
                 }else {
                     // edit mode on
      
-                        app.general_settings.cursor_hittest = false;
+                        app.general_settings.cursor_hittest = true;
                         app.widget_settings.quit_button.color = egui::Color32::RED;
                         app.widget_settings.edit_button.color = egui::Color32::LIGHT_GRAY;
 

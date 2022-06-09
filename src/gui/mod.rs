@@ -70,16 +70,16 @@ impl Default for App {
     fn default() -> Self {
         Self {
             widget_settings: WidgetSettings { 
-                edit_button: UiSettings { position: egui::Rect{min: egui::Pos2{x:0.0, y:200.0},
-                                                            max: egui::Pos2{x:100.0, y:300.0}},
+                edit_button: UiSettings { position: egui::Rect{min: egui::Pos2{x:50.0, y:100.0},
+                                                            max: egui::Pos2{x:50.0, y:200.0}},
                                         size: 100.0,
                                         color: egui::Color32::LIGHT_GRAY }, 
-                open_window_button: UiSettings { position: egui::Rect{min: egui::Pos2{x:100.0, y:200.0},
-                                                                    max: egui::Pos2{x:200.0, y:300.0}},
+                open_window_button: UiSettings { position: egui::Rect{min: egui::Pos2{x:50.0, y:200.0},
+                                                                    max: egui::Pos2{x:50.0, y:300.0}},
                                                 size: 100.0,
                                                 color: egui::Color32::BLACK }, 
-                quit_button: UiSettings {position: egui::Rect{min: egui::Pos2{x:100.0, y:200.0},
-                                                            max: egui::Pos2{x:200.0, y:300.0}},
+                quit_button: UiSettings {position: egui::Rect{min: egui::Pos2{x:50.0, y:200.0},
+                                                            max: egui::Pos2{x:50.0, y:300.0}},
                                         size: 100.0, 
                                         color: egui::Color32::RED  } },
             hotkey_settings: HotkeySettings {
