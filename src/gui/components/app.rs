@@ -9,16 +9,17 @@ extern crate clipboard;
 extern crate rev_lines;
 use clipboard::ClipboardProvider;
 extern crate input;
-use super::super::{App, GeneralSettings, HotkeySettings, ItemInspectionSettings};
+use super::super::{App, GeneralSettings, HotkeySettings, ItemInspectionSettings, WidgetSettings, UiSettings};
 use super::background_mode::BackgroundMode;
 use super::edit_mode::EditMode;
-use super::hotkeymanager::{check_hotkeys, reinitialize_hotkeys, Hotkey};
+use super::hotkeymanager::{check_hotkeys, Hotkey};
 use super::setup::SetupWindow;
 use super::AppComponent;
 use egui::FontFamily::Proportional;
 use egui::FontId;
 use egui::TextStyle::*;
 use inputbot::KeybdKey;
+extern crate windows_win;
 
 impl App {
     /// Called once before the first frame.
@@ -116,29 +117,21 @@ impl eframe::App for App {
             item_inspection_settings,
             hotkey_settings,
         } = self;
-        // getting our cursor position to check if our cursor is hovering over a specific thing . windows only
-        let temp_cursor: (i32, i32) = enigo::Enigo::mouse_location();
-        self.general_settings.cursor_location = Pos2 {
-            x: (temp_cursor.0 as f32 - self.general_settings.window_pos.x),
-            y: (temp_cursor.1 as f32 - self.general_settings.window_pos.y),
-        };
 
-        // this will set up the windo and fix dpi errors as well as setup hotkeys,
-        // idk how this runs some resolutions, only tested 1920x1080
-        // can also be reset to reinitialize windows / hotkeys
+        // this will reinitialize all window settings, scale settings etc., will be called at the start, as well as when something gets updated.
         if self.general_settings.reinitialize {
+            // set up the window according to the DPI (Zoom in windows display settings) and the display resolution
             self.general_settings.window_size = Vec2 {
                 x: frame.info.current_monitor.size().width as f32,
                 y: frame.info.current_monitor.size().height as f32,
             };
             let pixels_per_point = ctx.pixels_per_point();
             self.update_window(frame, pixels_per_point);
-            self.general_settings.reinitialize = false;
             ctx.set_pixels_per_point(1.0);
             frame.set_always_on_top(self.general_settings.always_on_top);
-            let mut style = (*ctx.style()).clone();
 
-            // Redefine text_styles
+            // Redefine text_styles and scale them
+            let mut style = (*ctx.style()).clone();
             style.text_styles = [
                 (Heading, FontId::new(30.0, Proportional)),
                 (Name("Heading2".into()), FontId::new(25.0, Proportional)),
@@ -149,12 +142,27 @@ impl eframe::App for App {
                 (Small, FontId::new(10.0, Proportional)),
             ]
             .into();
-
             // Mutate global style with above changes
             ctx.set_style(style);
+            frame.set_always_on_top(true);
+            let edit_button_size_px = 100.0 * self.general_settings.global_scale * 1.333333333;
+            self.general_settings.reinitialize = false;
         }
 
+        // getting our cursor position to check if our cursor is hovering over a specific thing . windows only
+        let temp_cursor: (i32, i32) = enigo::Enigo::mouse_location();
+        self.general_settings.cursor_location = Pos2 {
+            x: (temp_cursor.0 as f32 - self.general_settings.window_pos.x),
+            y: (temp_cursor.1 as f32 - self.general_settings.window_pos.y),
+        };
+
         check_hotkeys(self);
+        unsafe{
+        // let mut test3 = windows_win::raw::window::get_by_title("chrome", None);
+        // let mut test = windows_win::raw::window::get_active();
+        // let mut test2 = windows_win::raw::window::send_get_text(test3.unwrap()[0]);
+        // println!("{:?}", test2);
+        }
 
         // if true: our window has control of input (as normal),
         // if false: our window lets any input trough to the next window
@@ -162,9 +170,6 @@ impl eframe::App for App {
             frame.set_cursor_hittest(true);
         } else {
             frame.set_cursor_hittest(false);
-        }
-        if self.hotkey_settings.reinitialize_hotkeys {
-            reinitialize_hotkeys(self);
         }
 
         // the main panel that covers almost the full screen
@@ -200,34 +205,6 @@ impl eframe::App for App {
         ctx.request_repaint();
         std::thread::sleep(Duration::from_millis(1));
     }
-}
-
-fn show_bottom_panel(
-    ctx: &egui::Context,
-    frame: &mut eframe::Frame,
-    cursor_location: Pos2,
-    app: &mut App,
-) {
-    egui::TopBottomPanel::bottom("bottom_panel")
-        .frame(egui::Frame {
-            fill: egui::Color32::TRANSPARENT,
-            ..egui::Frame::default()
-        })
-        .min_height(100.0)
-        .show(ctx, |ui| {
-            egui::menu::bar(ui, |ui| {
-                let quit_button = ui.add_sized(
-                    Vec2 { x: 100.0, y: 50.0 },
-                    egui::Button::new("Quit").fill(egui::Color32::WHITE),
-                );
-                if quit_button.rect.contains(cursor_location) {
-                    app.general_settings.cursor_hittest = true;
-                    if quit_button.clicked() {
-                        frame.quit();
-                    };
-                }
-            });
-        });
 }
 
 fn show_item_inspection_window(

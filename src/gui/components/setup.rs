@@ -1,6 +1,6 @@
 use super::App;
 pub struct SetupWindow {}
-use super::hotkeymanager::{check_hotkeys, Hotkey};
+use super::hotkeymanager::{Hotkey};
 use egui::{style::Visuals, Pos2, Style, Vec2};
 use inputbot::KeybdKey;
 
@@ -32,19 +32,6 @@ impl SetupWindow {
                         app.general_settings.setup = false;
                         app.general_settings.always_on_top = true;
                         app.general_settings.reinitialize = true;
-                        app.hotkey_settings.all_hotkeys.push(Hotkey::new(
-                            vec![KeybdKey::LControlKey],
-                            "hotkey_item_inspection",
-                        ));
-                        app.hotkey_settings
-                            .all_hotkeys
-                            .push(Hotkey::new(vec![KeybdKey::LControlKey], "hotkey1"));
-                        app.hotkey_settings
-                            .all_hotkeys
-                            .push(Hotkey::new(vec![KeybdKey::LControlKey], "hotkey2"));
-                        app.hotkey_settings
-                            .all_hotkeys
-                            .push(Hotkey::new(vec![KeybdKey::LControlKey], "hotkey3"));
                     }
                 } else {
                     app.general_settings.cursor_hittest = false;

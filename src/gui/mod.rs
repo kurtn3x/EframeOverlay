@@ -12,11 +12,10 @@ pub struct ItemInspectionSettings {
 
 #[derive(Debug)]
 pub struct CustomHotkeys {
-    // those are temp hotkeys, they are used to store the hotkey and later copy the hotkey into the respective one in all_hotkeys
-    pub hotkey_item_inspection: Vec<KeybdKey>,
-    pub hotkey1: Vec<KeybdKey>,
-    pub hotkey2: Vec<KeybdKey>,
-    pub hotkey3: Vec<KeybdKey>,
+    pub hotkey_item_inspection: Hotkey<'static>,
+    pub hotkey1: Hotkey<'static>,
+    pub hotkey2: Hotkey<'static>,
+    pub hotkey3: Hotkey<'static>,
     // append more hotkeys here
 }
 
@@ -24,8 +23,7 @@ pub struct CustomHotkeys {
 pub struct HotkeySettings {
     pub capture_key: bool,
     pub reinitialize_hotkeys: bool,
-    pub all_hotkeys: Vec<Hotkey<'static>>,
-    pub custom_hotkeys: CustomHotkeys,
+    pub all_hotkeys: CustomHotkeys,
 }
 
 pub struct GeneralSettings {
@@ -75,7 +73,7 @@ impl Default for App {
                 edit_button: UiSettings { position: egui::Rect{min: egui::Pos2{x:0.0, y:200.0},
                                                             max: egui::Pos2{x:100.0, y:300.0}},
                                         size: 100.0,
-                                        color: egui::Color32::WHITE }, 
+                                        color: egui::Color32::LIGHT_GRAY }, 
                 open_window_button: UiSettings { position: egui::Rect{min: egui::Pos2{x:100.0, y:200.0},
                                                                     max: egui::Pos2{x:200.0, y:300.0}},
                                                 size: 100.0,
@@ -88,16 +86,14 @@ impl Default for App {
                 reinitialize_hotkeys: true,
                 capture_key: false,
                 // those are the real hotkeys, that we will use to iterate over
-                all_hotkeys: vec![],
-
-                // those are temp hotkeys, they are used to store the hotkey and later copy the hotkey into the respective one in all_hotkeys
-                custom_hotkeys: CustomHotkeys {
-                    hotkey_item_inspection: vec![],
-                    hotkey1: vec![],
-                    hotkey2: vec![],
-                    hotkey3: vec![],
+                all_hotkeys: CustomHotkeys {
+                    hotkey_item_inspection: Hotkey::new(vec![], "hotkey_item_inspection"),
+                    hotkey1: Hotkey::new(vec![], "hotkey1"),
+                    hotkey2: Hotkey::new(vec![], "hotkey2"),
+                    hotkey3: Hotkey::new(vec![], "hotkey3"),
                     // append more hotkeys here
                 },
+
             },
             general_settings: GeneralSettings {
                 global_scale: 1.0,
@@ -109,7 +105,7 @@ impl Default for App {
                 window_pos: Pos2 { x: 0.0, y: 0.0 },
                 reinitialize: true,
                 cursor_location: Pos2 { x: 0.0, y: 0.0 },
-                setup: true,
+                setup: false,
                 window_on_top: true,
                 transparent: true,
                 always_on_top: false,

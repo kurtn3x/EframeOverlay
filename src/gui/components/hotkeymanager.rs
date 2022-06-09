@@ -82,12 +82,8 @@ impl Hotkey<'_> {
         // as soon as both key states are active, it will return true and block input
         // until at least 1 of the keys is released
         if self.key.len() > 1 {
-            // if self.activated.len() == 1 {
-            //     self.activated.push(false);
-            // }
             for (pos, key) in self.key.iter_mut().enumerate() {
                 let temp2 = key.is_pressed();
-                println!("{:?} {}", self.activated, &temp2);
                 self.activated[pos] = temp2;
             }
 
@@ -181,54 +177,23 @@ pub fn capture_key() -> Vec<KeybdKey> {
 
 // all the hotkeys and what they are supposed to do
 pub fn check_hotkeys(app: &mut App) {
-    for hotkey in app.hotkey_settings.all_hotkeys.iter_mut() {
-        if hotkey.identifier == "first_hotkey" {
-            if hotkey.check() {
-                println!("CapsLock + Tab pressed!");
-            }
-        } else if hotkey.identifier == "hotkey_item_inspection" {
-            let status = hotkey.check();
-            if status && app.item_inspection_settings.hotkey_item_inspection_pressed == false {
-                app.item_inspection_settings.hotkey_item_inspection_pressed = true;
-                app.item_inspection_settings
-                    .hotkey_item_inspection_pressed_first = true;
-            } else if status && app.item_inspection_settings.hotkey_item_inspection_pressed == true
-            {
-                app.item_inspection_settings.hotkey_item_inspection_pressed = false;
-            }
-        } else if hotkey.identifier == "hotkey1" {
-            if hotkey.check() {
-                println!("hotkey1");
-            }
-        } else if hotkey.identifier == "hotkey2" {
-            if hotkey.check() {
-                println!("hotkey2");
-            }
-        } else if hotkey.identifier == "hotkey3" {
-            if hotkey.check() {
-                println!("hotkey3");
-            }
+    if app.hotkey_settings.all_hotkeys.hotkey_item_inspection.check(){
+        if app.item_inspection_settings.hotkey_item_inspection_pressed == false {
+            app.item_inspection_settings.hotkey_item_inspection_pressed = true;
+            app.item_inspection_settings
+                .hotkey_item_inspection_pressed_first = true;
+        } else if app.item_inspection_settings.hotkey_item_inspection_pressed == true
+        {
+            app.item_inspection_settings.hotkey_item_inspection_pressed = false;
         }
-    }
-}
 
-/// reinitialize all hotkeys by copying the values from the temp hotkeys into the values of the real hotkeys
-/// will be called after changing any hotkey
-pub fn reinitialize_hotkeys(app: &mut App) {
-    for hotkeys in app.hotkey_settings.all_hotkeys.iter_mut() {
-        if hotkeys.identifier == "hotkey_item_inspection" {
-            hotkeys.key = app
-                .hotkey_settings
-                .custom_hotkeys
-                .hotkey_item_inspection
-                .clone();
-        } else if hotkeys.identifier == "hotkey1" {
-            hotkeys.key = app.hotkey_settings.custom_hotkeys.hotkey1.clone();
-        } else if hotkeys.identifier == "hotkey2" {
-            hotkeys.key = app.hotkey_settings.custom_hotkeys.hotkey2.clone();
-        } else if hotkeys.identifier == "hotkey3" {
-            hotkeys.key = app.hotkey_settings.custom_hotkeys.hotkey3.clone();
-        }
+    }  else if app.hotkey_settings.all_hotkeys.hotkey1.check(){
+        println!("hotkey1");
+            
+    } else if app.hotkey_settings.all_hotkeys.hotkey2.check() {
+        println!("hotkey2");
+    } else if app.hotkey_settings.all_hotkeys.hotkey3.check(){
+                println!("hotkey3");
     }
-    app.hotkey_settings.reinitialize_hotkeys = false;
 }
+    
