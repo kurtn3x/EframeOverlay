@@ -1,5 +1,6 @@
 use std::time::Duration;
 extern crate enigo;
+use bytes::Bytes;
 use eframe::epaint::text::cursor;
 use egui::plot::{Plot, PlotUi};
 use egui::{style::Visuals, Pos2, Style, Vec2};
@@ -96,6 +97,17 @@ impl App {
     }
 }
 
+fn load_image_from_memory(image_data: &[u8]) -> Result<egui::ColorImage, image::ImageError> {
+    let image = image::load_from_memory(image_data)?;
+    let size = [image.width() as _, image.height() as _];
+    let image_buffer = image.to_rgba8();
+    let pixels = image_buffer.as_flat_samples();
+    Ok(egui::ColorImage::from_rgba_unmultiplied(
+        size,
+        pixels.as_slice(),
+    ))
+}
+
 impl eframe::App for App {
     fn clear_color(&self, _visuals: &egui::Visuals) -> egui::Rgba {
         egui::Rgba::TRANSPARENT
@@ -113,9 +125,9 @@ impl eframe::App for App {
             edit_mode_tab,
             item_info,
             current_clipboard,
-            some_option,
             item_inspection_settings,
             hotkey_settings,
+            textures
         } = self;
 
         // this will reinitialize all window settings, scale settings etc., will be called at the start, as well as when something gets updated.
@@ -157,12 +169,6 @@ impl eframe::App for App {
         };
 
         check_hotkeys(self);
-        unsafe{
-        // let mut test3 = windows_win::raw::window::get_by_title("chrome", None);
-        // let mut test = windows_win::raw::window::get_active();
-        // let mut test2 = windows_win::raw::window::send_get_text(test3.unwrap()[0]);
-        // println!("{:?}", test2);
-        }
 
         // if true: our window has control of input (as normal),
         // if false: our window lets any input trough to the next window
@@ -194,6 +200,20 @@ impl eframe::App for App {
                     ui.set_min_size(Vec2 { x: 300.0, y: 150.0 });
                     ui.visuals_mut().override_text_color = Some(egui::Color32::BLACK);
                     ui.label("{}");
+                    if self.textures.test_image.loaded == false {
+                        self.textures.test_image.loaded = true;
+                        let resp = reqwest::blocking::get("https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/SNice.svg/1024px-SNice.svg.png").expect("request failed");
+                        let bytes = resp.bytes().expect("msg");
+                        let v = bytes.as_ref();
+                        let x = load_image_from_memory(v).expect("msg");
+                        let texture: &egui::TextureHandle = self.textures.test_image.texture_handle.get_or_insert_with(|| {
+                            // Load the texture only once.
+                            ui.ctx().load_texture("my-image", x)
+                        });
+                        self.textures.test_image.texture_handle = Some(texture.clone());
+                    }
+                    let x = &*self.textures.test_image.texture_handle.as_ref().unwrap();
+                    ui.add(egui::Image::new(&*self.textures.test_image.texture_handle.as_ref().unwrap(), Vec2{x:100.0, y:100.0}));
                 });
         }
 

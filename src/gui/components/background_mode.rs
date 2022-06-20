@@ -25,7 +25,6 @@ impl AppComponent for BackgroundMode {
                     .size(app.widget_settings.edit_button.size)
                     .color(app.widget_settings.edit_button.color)).frame(false).sense(egui::Sense::click_and_drag()),
                 );
-
                 let quit_button = ui.put(
                     app.widget_settings.quit_button.position,
                     egui::Button::new(RichText::new("❌")
@@ -60,6 +59,7 @@ impl AppComponent for BackgroundMode {
                     app.general_settings.cursor_hittest = true;
                     if open_butt.clicked() {
                         app.toogle_show_window1();
+                        
                     }
                 } else {
 

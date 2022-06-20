@@ -1,8 +1,37 @@
 use self::components::hotkeymanager::Hotkey;
+use bytes::Bytes;
 use clipboard::ClipboardProvider;
-use egui::{Pos2, Vec2, Ui};
+use egui::{Pos2, Vec2, Ui, ColorImage};
+use image::ImageError;
 use inputbot::KeybdKey;
 mod components;
+
+// pub struct Texture{
+//     pub texture: Option<egui::TextureHandle>,
+//     pub loaded: bool,
+// }
+
+// impl Texture{
+//     fn load(&mut self, ctx: &egui::Context){
+//         if self.loaded == false{
+//             self.loaded = true;
+//             self.texture = self.texture.get_or_insert_with(|| {
+//                 // Load the texture only once.
+//                 ui.ctx().load_texture("my-image", egui::ColorImage::example())
+//             });
+//         }
+//     }
+// }
+
+pub struct Texture{
+    pub texture_handle: Option<egui::TextureHandle>,
+    pub memory_location: Option<egui::TextureHandle>,
+    pub loaded: bool,
+}
+pub struct Textures{
+    pub test_image: Texture,
+
+}
 
 pub struct ItemInspectionSettings {
     pub hotkey_item_inspection_pressed: bool,
@@ -51,24 +80,35 @@ pub struct WidgetSettings{
 }
 
 pub struct App {
-    pub edit_mode: bool,
+
+    // Temporary
     show_window_1: bool,
     some_window_open: bool,
     clipboard_manager: clipboard::ClipboardContext,
     some_val: i32,
-    pub edit_mode_tab: Vec<bool>,
     item_info: String,
     current_clipboard: String,
-    pub some_option: u8,
+    pub textures: Textures,
+
+
+    // if the gui is in edit mode
+    pub edit_mode: bool,
+    // which tab is currently active in the edit mode
+    pub edit_mode_tab: Vec<bool>,
+    // Settings for the item inspection
     pub item_inspection_settings: ItemInspectionSettings,
+    // General Settings (regarding the window and window setup)
     pub general_settings: GeneralSettings,
+    // Hotkey Settings (Our Hotkeys)
     pub hotkey_settings: HotkeySettings,
+    // Widget Settings (Settings of the widget Positions & Sizes)
     pub widget_settings: WidgetSettings,
 }
 
 impl Default for App {
     fn default() -> Self {
         Self {
+            textures: Textures { test_image: Texture { texture_handle: None, memory_location:None, loaded: false } },
             widget_settings: WidgetSettings { 
                 edit_button: UiSettings { position: egui::Rect{min: egui::Pos2{x:50.0, y:100.0},
                                                             max: egui::Pos2{x:50.0, y:200.0}},
@@ -85,7 +125,6 @@ impl Default for App {
             hotkey_settings: HotkeySettings {
                 reinitialize_hotkeys: true,
                 capture_key: false,
-                // those are the real hotkeys, that we will use to iterate over
                 all_hotkeys: CustomHotkeys {
                     hotkey_item_inspection: Hotkey::new(vec![], "hotkey_item_inspection"),
                     hotkey1: Hotkey::new(vec![], "hotkey1"),
@@ -123,7 +162,6 @@ impl Default for App {
             edit_mode_tab: vec![true, false, false],
             item_info: String::from("NoneItem"),
             current_clipboard: String::from("NoneCurrent"),
-            some_option: 1,
         }
     }
 }
