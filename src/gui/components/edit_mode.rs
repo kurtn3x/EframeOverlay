@@ -75,8 +75,8 @@ impl EditMode {
                 });
                 ui.heading("HOTKEY SETTINGS");
                 ui.add(egui::widgets::Separator::default());
-                egui::Grid::new("some_unique_id")
-                    .spacing(egui::Vec2 { x: 0.0, y: 5.0 })
+                egui::Grid::new("some_unique_illlll")
+                    .spacing(egui::Vec2 { x: 0.0, y: 10.0 })
                     .show(ui, |ui| {
                     // Row: hotkey_item_inspection
                         ui.add_space(5.0);
@@ -191,7 +191,27 @@ impl EditMode {
                     })
                     
                 });
-                ui.label("THIS IS TAB1");
+                ui.heading("SCALE SETTINGS");
+                ui.add(egui::widgets::Separator::default());
+                egui::Grid::new("some_unique_id")
+                    .spacing(egui::Vec2 { x: 0.0, y: 10.0 })
+                    .show(ui, |ui| {
+                    // Row: Global Scale
+                        ui.add_space(5.0);
+                        ui.label("Global Button Scale");
+                        ui.add_space(15.0);
+                        let slider = ui.add(egui::Slider::new(&mut app.general_settings.scaling.global_scale, 0.1..=2.0).max_decimals(1));
+                        ui.end_row();
+
+                    // Row: Text Scale
+                    ui.add_space(5.0);
+                    ui.label("Global Text Scale");
+                    ui.add_space(15.0);
+                    // let slider = ui.add(egui::Slider::new(&mut app.general_settings.global_scale, 0.1..=2.0).max_decimals(1));
+                    ui.end_row();
+
+
+                    });
             });
     }
 

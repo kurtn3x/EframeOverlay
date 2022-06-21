@@ -142,7 +142,8 @@ impl eframe::App for App {
             ctx.set_pixels_per_point(1.0);
             frame.set_always_on_top(self.general_settings.always_on_top);
 
-            // Redefine text_styles and scale them
+            // set global style of the UI
+
             let mut style = (*ctx.style()).clone();
             style.text_styles = [
                 (Heading, FontId::new(30.0, Proportional)),
@@ -154,10 +155,13 @@ impl eframe::App for App {
                 (Small, FontId::new(10.0, Proportional)),
             ]
             .into();
+
+            style.spacing.slider_width = 500.0;
+
             // Mutate global style with above changes
             ctx.set_style(style);
             frame.set_always_on_top(true);
-            let edit_button_size_px = 100.0 * self.general_settings.global_scale * 1.333333333;
+            let edit_button_size_px = 100.0 * self.general_settings.scaling.global_scale * 1.333333333;
             self.general_settings.reinitialize = false;
         }
 
@@ -199,7 +203,6 @@ impl eframe::App for App {
                 .show(ctx, |ui| {
                     ui.set_min_size(Vec2 { x: 300.0, y: 150.0 });
                     ui.visuals_mut().override_text_color = Some(egui::Color32::BLACK);
-                    ui.label("{}");
                     if self.textures.test_image.loaded == false {
                         self.textures.test_image.loaded = true;
                         let resp = reqwest::blocking::get("https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/SNice.svg/1024px-SNice.svg.png").expect("request failed");
@@ -212,7 +215,6 @@ impl eframe::App for App {
                         });
                         self.textures.test_image.texture_handle = Some(texture.clone());
                     }
-                    let x = &*self.textures.test_image.texture_handle.as_ref().unwrap();
                     ui.add(egui::Image::new(&*self.textures.test_image.texture_handle.as_ref().unwrap(), Vec2{x:100.0, y:100.0}));
                 });
         }

@@ -6,28 +6,12 @@ use image::ImageError;
 use inputbot::KeybdKey;
 mod components;
 
-// pub struct Texture{
-//     pub texture: Option<egui::TextureHandle>,
-//     pub loaded: bool,
-// }
-
-// impl Texture{
-//     fn load(&mut self, ctx: &egui::Context){
-//         if self.loaded == false{
-//             self.loaded = true;
-//             self.texture = self.texture.get_or_insert_with(|| {
-//                 // Load the texture only once.
-//                 ui.ctx().load_texture("my-image", egui::ColorImage::example())
-//             });
-//         }
-//     }
-// }
-
 pub struct Texture{
     pub texture_handle: Option<egui::TextureHandle>,
     pub memory_location: Option<egui::TextureHandle>,
     pub loaded: bool,
 }
+
 pub struct Textures{
     pub test_image: Texture,
 
@@ -55,8 +39,11 @@ pub struct HotkeySettings {
     pub all_hotkeys: CustomHotkeys,
 }
 
-pub struct GeneralSettings {
+pub struct ScaleSettings{
     pub global_scale: f32,
+}
+pub struct GeneralSettings {
+    pub scaling: ScaleSettings,
     pub cursor_hittest: bool,
     pub window_size: Vec2,
     pub window_pos: Pos2,
@@ -88,9 +75,9 @@ pub struct App {
     some_val: i32,
     item_info: String,
     current_clipboard: String,
+
+    // any textures are stored here
     pub textures: Textures,
-
-
     // if the gui is in edit mode
     pub edit_mode: bool,
     // which tab is currently active in the edit mode
@@ -135,7 +122,7 @@ impl Default for App {
 
             },
             general_settings: GeneralSettings {
-                global_scale: 1.0,
+                scaling: ScaleSettings { global_scale: 1.0 },
                 cursor_hittest: false,
                 window_size: Vec2 {
                     x: 1919.0,
