@@ -1,14 +1,16 @@
+use std::io::Cursor;
 use std::time::Duration;
 extern crate enigo;
 use bytes::Bytes;
 use eframe::epaint::text::cursor;
 use egui::plot::{Plot, PlotUi};
 use egui::{style::Visuals, Pos2, Style, Vec2};
-use egui::{InnerResponse, Rect};
+use egui::{InnerResponse, Rect, Response};
 use enigo::{Enigo, KeyboardControllable, MouseControllable};
 extern crate clipboard;
 extern crate rev_lines;
 use clipboard::ClipboardProvider;
+extern crate reqwest;
 extern crate input;
 use super::super::{App, GeneralSettings, HotkeySettings, ItemInspectionSettings, WidgetSettings, UiSettings};
 use super::background_mode::BackgroundMode;
@@ -21,6 +23,7 @@ use egui::FontId;
 use egui::TextStyle::*;
 use inputbot::KeybdKey;
 extern crate windows_win;
+extern crate load_image;
 
 impl App {
     /// Called once before the first frame.
@@ -107,6 +110,7 @@ fn load_image_from_memory(image_data: &[u8]) -> Result<egui::ColorImage, image::
         pixels.as_slice(),
     ))
 }
+
 
 impl eframe::App for App {
     fn clear_color(&self, _visuals: &egui::Visuals) -> egui::Rgba {
@@ -207,19 +211,16 @@ impl eframe::App for App {
                 .show(ctx, |ui| {
                     ui.set_min_size(Vec2 { x: 300.0, y: 150.0 });
                     ui.visuals_mut().override_text_color = Some(egui::Color32::BLACK);
-                    if self.textures.test_image.loaded == false {
-                        self.textures.test_image.loaded = true;
-                        let resp = reqwest::blocking::get("https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/SNice.svg/1024px-SNice.svg.png").expect("request failed");
-                        let bytes = resp.bytes().expect("msg");
-                        let v = bytes.as_ref();
-                        let x = load_image_from_memory(v).expect("msg");
-                        let texture: &egui::TextureHandle = self.textures.test_image.texture_handle.get_or_insert_with(|| {
-                            // Load the texture only once.
-                            ui.ctx().load_texture("my-image", x)
-                        });
-                        self.textures.test_image.texture_handle = Some(texture.clone());
-                    }
-                    ui.add(egui::Image::new(&*self.textures.test_image.texture_handle.as_ref().unwrap(), Vec2{x:100.0, y:100.0}));
+                    // if self.textures.test_image.loaded == false {
+                    //     self.textures.test_image.loaded = true;
+                        // let img = get_image_from_url("https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/SNice.svg/1024px-SNice.svg.png").expect("request failed");
+                    //     let texture: &egui::TextureHandle = self.textures.test_image.texture_handle.get_or_insert_with(|| {
+                    //         // Load the texture only once.
+                    //         ui.ctx().load_texture("my-image", img)
+                    //     });
+                    //     self.textures.test_image.texture_handle = Some(texture.clone());
+                    // }
+                    // ui.add(egui::Image::new(&*self.textures.test_image.texture_handle.as_ref().unwrap(), Vec2{x:100.0, y:100.0}));
                 });
         }
 
