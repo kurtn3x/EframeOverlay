@@ -6,12 +6,13 @@ use image::ImageError;
 use inputbot::KeybdKey;
 mod components;
 
+/// Texture  settings
 pub struct Texture{
     pub texture_handle: Option<egui::TextureHandle>,
-    pub memory_location: Option<egui::TextureHandle>,
     pub loaded: bool,
 }
 
+/// All textures
 pub struct Textures{
     pub test_image: Texture,
 
@@ -23,6 +24,7 @@ pub struct ItemInspectionSettings {
     pub hotkey_item_inspection_pressed_first: bool,
 }
 
+/// all hotkeys
 #[derive(Debug)]
 pub struct CustomHotkeys {
     pub hotkey_item_inspection: Hotkey<'static>,
@@ -32,22 +34,32 @@ pub struct CustomHotkeys {
     // append more hotkeys here
 }
 
-#[derive(Debug)]
+/// Global Hotkey Settings
 pub struct HotkeySettings {
     pub capture_key: bool,
     pub reinitialize_hotkeys: bool,
     pub all_hotkeys: CustomHotkeys,
 }
 
+/// global scale settings
 pub struct ScaleSettings{
     pub global_scale: f32,
+    pub text_scale: f32,
 }
+
+pub struct Reinitialize {
+    global : bool,
+    window_settings : bool,
+    style_settings : bool,
+}
+
+/// General Settings of the UI including scaling, size and other window settings
 pub struct GeneralSettings {
     pub scaling: ScaleSettings,
     pub cursor_hittest: bool,
     pub window_size: Vec2,
     pub window_pos: Pos2,
-    pub reinitialize: bool,
+    pub reinitialize: Reinitialize,
     pub setup: bool,
     pub cursor_location: Pos2,
     pub window_on_top: bool,
@@ -55,11 +67,14 @@ pub struct GeneralSettings {
     pub always_on_top: bool,
 }
 
+/// Position, size & color of the ui element
 pub struct UiSettings{
     pub position: egui::Rect,
     pub size: f32,
     pub color: egui::Color32,
 }
+
+/// Settings of the specific UI elements
 pub struct WidgetSettings{
     pub edit_button : UiSettings,
     pub open_window_button: UiSettings,
@@ -95,7 +110,7 @@ pub struct App {
 impl Default for App {
     fn default() -> Self {
         Self {
-            textures: Textures { test_image: Texture { texture_handle: None, memory_location:None, loaded: false } },
+            textures: Textures { test_image: Texture { texture_handle: None, loaded: false } },
             widget_settings: WidgetSettings { 
                 edit_button: UiSettings { position: egui::Rect{min: egui::Pos2{x:50.0, y:100.0},
                                                             max: egui::Pos2{x:50.0, y:200.0}},
@@ -122,19 +137,19 @@ impl Default for App {
 
             },
             general_settings: GeneralSettings {
-                scaling: ScaleSettings { global_scale: 1.0 },
+                scaling: ScaleSettings { global_scale: 1.0, text_scale : 1.0 },
                 cursor_hittest: false,
                 window_size: Vec2 {
                     x: 1919.0,
                     y: 1032.0,
                 },
                 window_pos: Pos2 { x: 0.0, y: 0.0 },
-                reinitialize: true,
+                reinitialize: Reinitialize { global: true, window_settings: true, style_settings: true },
                 cursor_location: Pos2 { x: 0.0, y: 0.0 },
                 setup: false,
                 window_on_top: true,
                 transparent: true,
-                always_on_top: false,
+                always_on_top: true,
             },
             item_inspection_settings: ItemInspectionSettings {
                 hotkey_item_inspection_pressed: false,

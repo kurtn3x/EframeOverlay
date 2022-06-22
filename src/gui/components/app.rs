@@ -131,38 +131,42 @@ impl eframe::App for App {
         } = self;
 
         // this will reinitialize all window settings, scale settings etc., will be called at the start, as well as when something gets updated.
-        if self.general_settings.reinitialize {
+        if self.general_settings.reinitialize.global {
+            self.general_settings.reinitialize.global = false;
+
+
             // set up the window according to the DPI (Zoom in windows display settings) and the display resolution
-            self.general_settings.window_size = Vec2 {
-                x: frame.info.current_monitor.size().width as f32,
-                y: frame.info.current_monitor.size().height as f32,
-            };
-            let pixels_per_point = ctx.pixels_per_point();
-            self.update_window(frame, pixels_per_point);
-            ctx.set_pixels_per_point(1.0);
-            frame.set_always_on_top(self.general_settings.always_on_top);
+            if self.general_settings.reinitialize.window_settings{
+                self.general_settings.window_size = Vec2 {
+                    x: frame.info.current_monitor.size().width as f32,
+                    y: frame.info.current_monitor.size().height as f32,
+                };
+                let pixels_per_point = ctx.pixels_per_point();
+                self.update_window(frame, pixels_per_point);
+                ctx.set_pixels_per_point(1.0);
+                frame.set_always_on_top(self.general_settings.always_on_top);
+                self.general_settings.reinitialize.window_settings = false;
+            }
 
             // set global style of the UI
+            if self.general_settings.reinitialize.style_settings{
+                let mut style = (*ctx.style()).clone();
+                style.text_styles = [
+                    (Heading, FontId::new(30.0 * self.general_settings.scaling.text_scale, Proportional)),
+                    (Name("Heading2".into()), FontId::new(25.0* self.general_settings.scaling.text_scale, Proportional)),
+                    (Name("Context".into()), FontId::new(23.0* self.general_settings.scaling.text_scale, Proportional)),
+                    (Body, FontId::new(18.0* self.general_settings.scaling.text_scale, Proportional)),
+                    (Monospace, FontId::new(14.0* self.general_settings.scaling.text_scale, Proportional)),
+                    (Button, FontId::new(20.0* self.general_settings.scaling.text_scale, Proportional)),
+                    (Small, FontId::new(10.0* self.general_settings.scaling.text_scale, Proportional)),
+                ]
+                .into();
 
-            let mut style = (*ctx.style()).clone();
-            style.text_styles = [
-                (Heading, FontId::new(30.0, Proportional)),
-                (Name("Heading2".into()), FontId::new(25.0, Proportional)),
-                (Name("Context".into()), FontId::new(23.0, Proportional)),
-                (Body, FontId::new(18.0, Proportional)),
-                (Monospace, FontId::new(14.0, Proportional)),
-                (Button, FontId::new(20.0, Proportional)),
-                (Small, FontId::new(10.0, Proportional)),
-            ]
-            .into();
-
-            style.spacing.slider_width = 500.0;
-
-            // Mutate global style with above changes
-            ctx.set_style(style);
-            frame.set_always_on_top(true);
-            let edit_button_size_px = 100.0 * self.general_settings.scaling.global_scale * 1.333333333;
-            self.general_settings.reinitialize = false;
+                style.spacing.slider_width = 500.0;
+                // Mutate global style with above changes
+                ctx.set_style(style);
+                self.general_settings.reinitialize.style_settings = false;
+            }
         }
 
         // getting our cursor position to check if our cursor is hovering over a specific thing . windows only

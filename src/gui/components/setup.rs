@@ -31,7 +31,7 @@ impl SetupWindow {
                     if inspection_window_close_button.clicked() {
                         app.general_settings.setup = false;
                         app.general_settings.always_on_top = true;
-                        app.general_settings.reinitialize = true;
+                        app.general_settings.reinitialize.global = true;
                     }
                 } else {
                     app.general_settings.cursor_hittest = false;

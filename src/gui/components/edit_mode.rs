@@ -204,11 +204,15 @@ impl EditMode {
                         ui.end_row();
 
                     // Row: Text Scale
-                    ui.add_space(5.0);
-                    ui.label("Global Text Scale");
-                    ui.add_space(15.0);
-                    // let slider = ui.add(egui::Slider::new(&mut app.general_settings.global_scale, 0.1..=2.0).max_decimals(1));
-                    ui.end_row();
+                        ui.add_space(5.0);
+                        ui.label("Global Text Scale");
+                        ui.add_space(15.0);
+                        let slider1 = ui.add(egui::Slider::new(&mut app.general_settings.scaling.text_scale, 0.1..=2.0).max_decimals(1));
+                        if slider1.changed(){
+                            app.general_settings.reinitialize.global = true;
+                            app.general_settings.reinitialize.style_settings = true;
+                        }
+                        ui.end_row();
 
 
                     });
@@ -273,10 +277,11 @@ impl AppComponent for EditMode {
                     Vec2 { x: 100.0, y: 50.0 },
                     egui::Button::new("Open Window").fill(egui::Color32::WHITE),
                 );
+
                 let edit_butt = ui.put(
                     app.widget_settings.edit_button.position,
                     egui::Button::new(RichText::new("⚙")
-                    .size(app.widget_settings.edit_button.size)
+                    .size(app.widget_settings.edit_button.size * app.general_settings.scaling.global_scale)
                     .color(app.widget_settings.edit_button.color)).frame(false).sense(egui::Sense::click_and_drag()),
                 );
 
@@ -284,7 +289,7 @@ impl AppComponent for EditMode {
                     app.widget_settings.quit_button.position,
                     egui::Button::new(RichText::new("❌")
                     .color(app.widget_settings.quit_button.color)
-                    .size(app.widget_settings.quit_button.size)).frame(false).sense(egui::Sense::click_and_drag()),
+                    .size(app.widget_settings.quit_button.size * app.general_settings.scaling.global_scale)).frame(false).sense(egui::Sense::click_and_drag()),
                 );
 
                 if edit_butt
@@ -331,9 +336,7 @@ impl AppComponent for EditMode {
      
                         app.general_settings.cursor_hittest = true;
                         app.widget_settings.quit_button.color = egui::Color32::RED;
-                        app.widget_settings.edit_button.color = egui::Color32::LIGHT_GRAY;
-
-                    
+                        app.widget_settings.edit_button.color = egui::Color32::LIGHT_GRAY;   
                 }
                 
                 if app.edit_mode_tab[0] {
