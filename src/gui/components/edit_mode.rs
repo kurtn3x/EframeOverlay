@@ -200,7 +200,7 @@ impl EditMode {
                         ui.add_space(5.0);
                         ui.label("Global Button Scale");
                         ui.add_space(15.0);
-                        let slider = ui.add(egui::Slider::new(&mut app.general_settings.scaling.global_scale, 0.1..=2.0).max_decimals(1));
+                        let slider = ui.add(egui::Slider::new(&mut app.general_settings.scaling.button_scale, 0.1..=2.0).max_decimals(1));
                         ui.end_row();
 
                     // Row: Text Scale
@@ -281,7 +281,7 @@ impl AppComponent for EditMode {
                 let edit_butt = ui.put(
                     app.widget_settings.edit_button.position,
                     egui::Button::new(RichText::new("⚙")
-                    .size(app.widget_settings.edit_button.size * app.general_settings.scaling.global_scale)
+                    .size(app.widget_settings.edit_button.size * app.general_settings.scaling.button_scale)
                     .color(app.widget_settings.edit_button.color)).frame(false).sense(egui::Sense::click_and_drag()),
                 );
 
@@ -289,7 +289,7 @@ impl AppComponent for EditMode {
                     app.widget_settings.quit_button.position,
                     egui::Button::new(RichText::new("❌")
                     .color(app.widget_settings.quit_button.color)
-                    .size(app.widget_settings.quit_button.size * app.general_settings.scaling.global_scale)).frame(false).sense(egui::Sense::click_and_drag()),
+                    .size(app.widget_settings.quit_button.size * app.general_settings.scaling.button_scale)).frame(false).sense(egui::Sense::click_and_drag()),
                 );
 
                 if edit_butt

@@ -22,14 +22,14 @@ impl AppComponent for BackgroundMode {
                 let edit_butt = ui.put(
                     app.widget_settings.edit_button.position,
                     egui::Button::new(RichText::new("⚙")
-                    .size(app.widget_settings.edit_button.size)
-                    .color(app.widget_settings.edit_button.color)).frame(false).sense(egui::Sense::click_and_drag()),
+                    .size(app.widget_settings.edit_button.size * app.general_settings.scaling.button_scale)
+                    .color(app.widget_settings.edit_button.color )).frame(false).sense(egui::Sense::click_and_drag()),
                 );
                 let quit_button = ui.put(
                     app.widget_settings.quit_button.position,
                     egui::Button::new(RichText::new("❌")
                     .color(app.widget_settings.quit_button.color)
-                    .size(app.widget_settings.quit_button.size)).frame(false).sense(egui::Sense::click_and_drag()),
+                    .size(app.widget_settings.quit_button.size * app.general_settings.scaling.button_scale)).frame(false).sense(egui::Sense::click_and_drag()),
                 );
                 if edit_butt
                     .rect

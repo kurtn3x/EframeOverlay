@@ -67,37 +67,6 @@ impl App {
             y: ((self.general_settings.window_size.y - 1.0) / pixels_per_point),
         });
     }
-
-    fn parse_clipboard(&mut self) {
-        let current_clipboard_temp = self.clipboard_manager.get_contents();
-        let current_clipboard = match current_clipboard_temp {
-            Ok(clipboard_data) => clipboard_data,
-            Err(error) => String::from("NoneCurrent"),
-        };
-        println!("Self.current_clipboard {}", self.current_clipboard);
-        println!("self.item_info {}", self.item_info);
-        println!("current_clipboard {}", current_clipboard);
-
-        if current_clipboard != self.item_info || current_clipboard == self.current_clipboard {
-            let mut enigo = Enigo::new();
-            enigo.key_down(enigo::Key::Control);
-            enigo.key_down(enigo::Key::Layout('c'));
-            enigo.key_up(enigo::Key::Control);
-            enigo.key_up(enigo::Key::Layout('c'));
-            std::thread::sleep(Duration::from_millis(10));
-
-            let later_clipboard_temp = self.clipboard_manager.get_contents();
-            let later_clipboard = match later_clipboard_temp {
-                Ok(clipboard_data) => clipboard_data,
-                Err(error) => String::from("NoneItem"),
-            };
-            self.current_clipboard = current_clipboard;
-            self.item_info = later_clipboard;
-            println!("later_clipboard {}", self.item_info);
-            self.clipboard_manager
-                .set_contents(self.current_clipboard.clone());
-        }
-    }
 }
 
 fn load_image_from_memory(image_data: &[u8]) -> Result<egui::ColorImage, image::ImageError> {
@@ -123,15 +92,10 @@ impl eframe::App for App {
             show_window_1,
             general_settings,
             edit_mode,
-            some_window_open,
-            clipboard_manager,
-            some_val,
             edit_mode_tab,
-            item_info,
-            current_clipboard,
             item_inspection_settings,
             hotkey_settings,
-            textures
+            some_val,
         } = self;
 
         // this will reinitialize all window settings, scale settings etc., will be called at the start, as well as when something gets updated.
@@ -213,7 +177,6 @@ impl eframe::App for App {
                     ui.visuals_mut().override_text_color = Some(egui::Color32::BLACK);
                     // if self.textures.test_image.loaded == false {
                     //     self.textures.test_image.loaded = true;
-                        // let img = get_image_from_url("https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/SNice.svg/1024px-SNice.svg.png").expect("request failed");
                     //     let texture: &egui::TextureHandle = self.textures.test_image.texture_handle.get_or_insert_with(|| {
                     //         // Load the texture only once.
                     //         ui.ctx().load_texture("my-image", img)

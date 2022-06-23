@@ -6,18 +6,6 @@ use image::ImageError;
 use inputbot::KeybdKey;
 mod components;
 
-/// Texture  settings
-pub struct Texture{
-    pub texture_handle: Option<egui::TextureHandle>,
-    pub loaded: bool,
-}
-
-/// All textures
-pub struct Textures{
-    pub test_image: Texture,
-
-}
-
 pub struct ItemInspectionSettings {
     pub hotkey_item_inspection_pressed: bool,
     pub hotkey_item_inspection_pressed_initial_position: Pos2,
@@ -41,9 +29,9 @@ pub struct HotkeySettings {
     pub all_hotkeys: CustomHotkeys,
 }
 
-/// global scale settings
+/// global scale settings ( text_scale & global_scale)
 pub struct ScaleSettings{
-    pub global_scale: f32,
+    pub button_scale: f32,
     pub text_scale: f32,
 }
 
@@ -85,14 +73,7 @@ pub struct App {
 
     // Temporary
     show_window_1: bool,
-    some_window_open: bool,
-    clipboard_manager: clipboard::ClipboardContext,
     some_val: i32,
-    item_info: String,
-    current_clipboard: String,
-
-    // any textures are stored here
-    pub textures: Textures,
     // if the gui is in edit mode
     pub edit_mode: bool,
     // which tab is currently active in the edit mode
@@ -110,7 +91,7 @@ pub struct App {
 impl Default for App {
     fn default() -> Self {
         Self {
-            textures: Textures { test_image: Texture { texture_handle: None, loaded: false } },
+            some_val : 0,
             widget_settings: WidgetSettings { 
                 edit_button: UiSettings { position: egui::Rect{min: egui::Pos2{x:50.0, y:100.0},
                                                             max: egui::Pos2{x:50.0, y:200.0}},
@@ -137,7 +118,7 @@ impl Default for App {
 
             },
             general_settings: GeneralSettings {
-                scaling: ScaleSettings { global_scale: 1.0, text_scale : 1.0 },
+                scaling: ScaleSettings { button_scale: 1.0, text_scale : 1.0 },
                 cursor_hittest: false,
                 window_size: Vec2 {
                     x: 1919.0,
@@ -158,12 +139,8 @@ impl Default for App {
             },
             edit_mode: false,
             show_window_1: false,
-            some_window_open: false,
-            clipboard_manager: ClipboardProvider::new().unwrap(),
-            some_val: 0,
             edit_mode_tab: vec![true, false, false],
-            item_info: String::from("NoneItem"),
-            current_clipboard: String::from("NoneCurrent"),
+ 
         }
     }
 }
