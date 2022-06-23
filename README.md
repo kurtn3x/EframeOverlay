@@ -1,4 +1,4 @@
-A Simple Overlay using the Eframe Template / Egui. Can be used for drawing overlays over games or other stuff. Is a transparent window that lets all input pass trough, so it doesnt block any input. Only allows input if hovering over buttons for example.
+A Simple Overlay using the Eframe Template / Egui. Can be used for drawing overlays over games or other stuff. It's a transparent window that lets all input pass trough, so it doesnt block any input. Only allows input if hovering over buttons for example.
 
 Simply a showcase, wanted to use this to build a bigger app but Rust is the wrong language for what i want.
 
